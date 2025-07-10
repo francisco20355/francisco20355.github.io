@@ -63,35 +63,9 @@
     padding: 20px;
     font-size: 0.9rem;
   }
-  /* Botón para abrir chat */
-  #chat-button {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background-color: #2d89ef;
-    color: white;
-    border: none;
-    padding: 15px 20px;
-    border-radius: 50px;
-    font-size: 1.2rem;
-    font-weight: 700;
-    box-shadow: 0 4px 8px rgba(45,137,239,0.5);
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    z-index: 1000;
-  }
-  #chat-button:hover {
-    background-color: #1a5ec8;
-  }
   @media (max-width: 600px) {
     main {
       margin: 20px 15px 50px 15px;
-    }
-    #chat-button {
-      padding: 12px 16px;
-      font-size: 1rem;
-      bottom: 20px;
-      right: 20px;
     }
   }
 </style>
@@ -142,10 +116,245 @@
 
 </main>
 
-<button id="chat-button" onclick="Tawk_API.toggle()">Chateá con Soporte</button>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FAQs y Soporte - Tu AdBlock</title>
+<style>
+  /* Reset y tipografía */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f7fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background-color: #2d89ef;
+    color: white;
+    padding: 20px 30px;
+    text-align: center;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  }
+  header h1 {
+    margin: 0;
+    font-weight: 700;
+  }
+  main {
+    max-width: 900px;
+    margin: 40px auto 60px auto;
+    padding: 0 20px;
+  }
+  h2 {
+    border-bottom: 3px solid #2d89ef;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    font-weight: 700;
+  }
+  details {
+    background: white;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+  }
+  details[open] {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+  summary {
+    font-size: 1.1rem;
+    font-weight: 600;
+    outline: none;
+  }
+  details p {
+    margin-top: 10px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  footer {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+    font-size: 0.9rem;
+  }
+  @media (max-width: 600px) {
+    main {
+      margin: 20px 15px 50px 15px;
+    }
+  }
+</style>
+</head>
+<body>
 
-<footer>
-  &copy; 2025 Tu AdBlock. Todos los derechos reservados.
+<header>
+  <h1>Preguntas Frecuentes (FAQ) & Soporte</h1>
+</header>
+
+<main>
+  <h2>Preguntas Frecuentes</h2>
+  
+  <details>
+    <summary>¿Cómo activo el bloqueador de anuncios?</summary>
+    <p>Para activar el bloqueador, simplemente haz clic en el ícono de la extensión y asegúrate de que esté habilitada. La página se actualizará y los anuncios serán bloqueados automáticamente.</p>
+  </details>
+  
+  <details>
+    <summary>¿Puedo agregar reglas personalizadas?</summary>
+    <p>Sí, la extensión permite agregar reglas personalizadas para bloquear sitios o anuncios específicos. Revisa la sección de configuración para añadir tus propias reglas.</p>
+  </details>
+  
+  <details>
+    <summary>¿La extensión consume muchos recursos?</summary>
+    <p>No, está diseñada para ser ligera y eficiente, consumiendo muy pocos recursos del sistema mientras bloquea anuncios.</p>
+  </details>
+  
+  <details>
+    <summary>¿Cómo reporto un anuncio que no se bloquea?</summary>
+    <p>Si ves algún anuncio que no es bloqueado, por favor contacta con nosotros a través del chat de soporte o envía un mensaje en la sección de contacto para ayudarnos a mejorar.</p>
+  </details>
+  
+  <details>
+    <summary>¿Es compatible con todos los navegadores?</summary>
+    <p>La extensión funciona principalmente en navegadores basados en Chromium, como Google Chrome y Microsoft Edge. Estamos trabajando para ampliar la compatibilidad.</p>
+  </details>
+  
+  <details>
+    <summary>¿La extensión es gratuita?</summary>
+    <p>Sí, es completamente gratuita para todos los usuarios.</p>
+  </details>
+  
+  <details>
+    <summary>¿Cómo puedo desactivar temporalmente el bloqueador?</summary>
+    <p>Podés desactivar la extensión desde el ícono en la barra de herramientas del navegador o desde la configuración de extensiones del navegador.</p>
+  </details>
+
+</main>
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FAQs y Soporte - Tu AdBlock</title>
+<style>
+  /* Reset y tipografía */
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f4f7fa;
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background-color: #2d89ef;
+    color: white;
+    padding: 20px 30px;
+    text-align: center;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  }
+  header h1 {
+    margin: 0;
+    font-weight: 700;
+  }
+  main {
+    max-width: 900px;
+    margin: 40px auto 60px auto;
+    padding: 0 20px;
+  }
+  h2 {
+    border-bottom: 3px solid #2d89ef;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+    font-weight: 700;
+  }
+  details {
+    background: white;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 15px 20px;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+  }
+  details[open] {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  }
+  summary {
+    font-size: 1.1rem;
+    font-weight: 600;
+    outline: none;
+  }
+  details p {
+    margin-top: 10px;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  footer {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+    font-size: 0.9rem;
+  }
+  @media (max-width: 600px) {
+    main {
+      margin: 20px 15px 50px 15px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Preguntas Frecuentes (FAQ) & Soporte</h1>
+</header>
+
+<main>
+  <h2>Preguntas Frecuentes</h2>
+  
+  <details>
+    <summary>¿Cómo activo el bloqueador de anuncios?</summary>
+    <p>Para activar el bloqueador, simplemente haz clic en el ícono de la extensión y asegúrate de que esté habilitada. La página se actualizará y los anuncios serán bloqueados automáticamente.</p>
+  </details>
+  
+  <details>
+    <summary>¿Puedo agregar reglas personalizadas?</summary>
+    <p>Sí, la extensión permite agregar reglas personalizadas para bloquear sitios o anuncios específicos. Revisa la sección de configuración para añadir tus propias reglas.</p>
+  </details>
+  
+  <details>
+    <summary>¿La extensión consume muchos recursos?</summary>
+    <p>No, está diseñada para ser ligera y eficiente, consumiendo muy pocos recursos del sistema mientras bloquea anuncios.</p>
+  </details>
+  
+  <details>
+    <summary>¿Cómo reporto un anuncio que no se bloquea?</summary>
+    <p>Si ves algún anuncio que no es bloqueado, por favor contacta con nosotros a través del chat de soporte o envía un mensaje en la sección de contacto para ayudarnos a mejorar.</p>
+  </details>
+  
+  <details>
+    <summary>¿Es compatible con todos los navegadores?</summary>
+    <p>La extensión funciona principalmente en navegadores basados en Chromium, como Google Chrome y Microsoft Edge. Estamos trabajando para ampliar la compatibilidad.</p>
+  </details>
+  
+  <details>
+    <summary>¿La extensión es gratuita?</summary>
+    <p>Sí, es completamente gratuita para todos los usuarios.</p>
+  </details>
+  
+  <details>
+    <summary>¿Cómo puedo desactivar temporalmente el bloqueador?</summary>
+    <p>Podés desactivar la extensión desde el ícono en la barra de herramientas del navegador o desde la configuración de extensiones del navegador.</p>
+  </details>
+
+</main>
+
+<footer style="font-size:0.8rem; color:#666; text-align:center; margin-top:40px; padding:20px 10px;">
+  &copy; 2025 Tu AdBlock. Todos los derechos reservados.<br>
+  El contenido de este sitio está protegido por derechos de autor y no puede ser reproducido, distribuido o utilizado sin autorización expresa.
 </footer>
 
 <!--Start of Tawk.to Script-->
@@ -164,4 +373,41 @@ s0.parentNode.insertBefore(s1,s0);
 
 </body>
 </html>
+
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/68700a08baa3a2190a75ca1c/1ivqqed2r';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
+
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/68700a08baa3a2190a75ca1c/1ivqqed2r';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>
+</html>
+
 
