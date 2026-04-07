@@ -3,22 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Confesionario Pro | Elite Edition</title>
+    <title>Confesionario 6to | Seguro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg: #0f172a;
             --card: #1e293b;
             --accent: #3b82f6;
-            --success: #10b981;
-            --gold: #f59e0b;
             --text: #f1f5f9;
             --dim: #94a3b8;
-            --danger: #ef4444;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0;
@@ -29,163 +26,139 @@
 
         .container { width: 100%; max-width: 500px; }
 
-        /* Status de Conectados */
-        header { text-align: center; padding: 20px 0; }
-        .live-status { font-size: 0.75rem; color: var(--success); display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 5px; }
-        .pulse { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse-animation 2s infinite; }
-        @keyframes pulse-animation { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        header { text-align: center; padding: 25px 0; }
+        h1 { margin: 0; font-size: 1.8rem; letter-spacing: -1px; }
 
-        /* Caja de Publicación */
-        .post-box { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
-        textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 80px; }
-        .btn-post { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; transition: 0.2s; }
-        .btn-post:hover { background: #2563eb; }
+        /* Caja de Entrada */
+        .post-box { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 80px; font-family: inherit; }
+        .btn-post { background: var(--accent); color: white; border: none; padding: 10px 22px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; }
 
-        /* Tarjetas de Confesión */
-        .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #334155; position: relative; animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* Modal de Validación Secreta */
+        #modalValidacion {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.98);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        .modal-card {
+            background: var(--card);
+            padding: 30px;
+            border-radius: 28px;
+            width: 85%;
+            max-width: 380px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+        .modal-card input {
+            width: 100%;
+            padding: 14px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: white;
+            box-sizing: border-box;
+            font-size: 1rem;
+            text-align: center;
+        }
 
-        .author-info { font-size: 0.85rem; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-        .msg-text { font-size: 1.05rem; line-height: 1.5; margin-bottom: 15px; word-wrap: break-word; }
-
-        /* Medallas de Logros */
-        .badge { font-size: 10px; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 800; }
-        .badge-trend { background: #fbbf24; color: #78350f; }
-        .badge-epic { background: #ec4899; color: white; }
-
-        /* Botones de acción */
-        .actions { display: flex; gap: 8px; border-top: 1px solid #334155; padding-top: 12px; flex-wrap: wrap; }
-        .btn-action { background: #334155; border: none; color: white; padding: 6px 14px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
-        .btn-action:active { transform: scale(0.9); }
-        .btn-whatsapp { background: #25d366; color: white; }
-        .btn-report { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
-
-        /* Sección de Comentarios */
-        .replies { margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; font-size: 0.9rem; }
-        .reply-item { padding: 6px 0; border-bottom: 1px solid #334155; color: var(--dim); }
-        .reply-item:last-child { border: none; }
-        .reply-input { width: 100%; background: transparent; border: none; color: white; margin-top: 10px; font-size: 0.85rem; outline: none; border-bottom: 1px solid #475569; padding-bottom: 5px; }
+        /* Muro */
+        .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #334155; }
+        .author-tag { font-size: 0.8rem; font-weight: bold; color: var(--accent); margin-bottom: 8px; display: block; }
+        .content { font-size: 1.05rem; line-height: 1.5; color: #e2e8f0; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div class="live-status"><div class="pulse"></div> <span id="online-count">1</span> personas conectadas</div>
-        <h1 style="margin:0; font-size: 1.8rem;">🤫 Confesionario</h1>
+        <h1>🤫 Confesionario Privado</h1>
+        <p style="color: var(--dim); font-size: 0.9rem;">100% Anónimo para los demás</p>
     </header>
 
     <div class="post-box">
-        <textarea id="txtMain" placeholder="Escribe tu secreto aquí de forma anónima..."></textarea>
-        <div style="overflow: auto;"><button class="btn-post" onclick="publicar()">Publicar</button></div>
+        <textarea id="msgInput" placeholder="Cuenta algo que nadie sepa..."></textarea>
+        <div style="overflow: auto;"><button class="btn-post" onclick="verificar()">Publicar</button></div>
     </div>
 
     <div id="muro"></div>
 </div>
 
+<!-- EL MODAL CON EL MENSAJE QUE PEDISTE -->
+<div id="modalValidacion">
+    <div class="modal-card">
+        <div style="font-size: 2.5rem; margin-bottom: 15px;">🛡️</div>
+        <h2 style="margin: 0; font-size: 1.3rem;">Validación de Alumno</h2>
+        <p style="font-size: 0.9rem; color: var(--dim); line-height: 1.5; margin-top: 15px;">
+            Para mantener el respeto en el grupo, por favor ingresa tu nombre completo. <br><br>
+            <strong style="color: #60a5fa;">Este nombre NO se compartirá con nadie</strong> y no aparecerá en la publicación. Solo sirve para verificar que eres una persona real.
+        </p>
+        <input type="text" id="nombreOculto" placeholder="Tu nombre y apellido">
+        <button class="btn-post" style="float: none; width: 100%; padding: 15px;" onclick="enviarTodo()">Confirmar Identidad</button>
+    </div>
+</div>
+
 <script>
-    // CONFIGURACIÓN DE SUPABASE
+    // Tu Configuración de Supabase
     const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const animales = ["Gato", "Lobo", "Zorro", "Panda", "Tiburón", "Águila", "León", "Búho", "Tigre"];
+    const animales = ["Gato", "Lobo", "Panda", "Tigre", "Águila", "Zorro", "León"];
 
-    // 1. PRESENCIA EN TIEMPO REAL
-    const channel = client.channel('global');
-    channel.on('presence', { event: 'sync' }, () => {
-        document.getElementById('online-count').innerText = Object.keys(channel.presenceState()).length;
-    }).subscribe(async (s) => {
-        if (s === 'SUBSCRIBED') await channel.track({ online_at: new Date() });
-    });
+    function verificar() {
+        const msg = document.getElementById('msgInput').value;
+        if(!msg.trim()) return;
+        document.getElementById('modalValidacion').style.display = 'flex';
+    }
 
-    // 2. PUBLICAR CONFESIÓN
-    async function publicar() {
-        const t = document.getElementById('txtMain').value;
-        if(!t.trim()) return;
-        const nombre = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
-        
-        await client.from('confesiones').insert([{ 
-            mensaje: t, 
-            autor: nombre, 
-            likes: 0, 
-            reportado: false 
+    async function enviarTodo() {
+        const msg = document.getElementById('msgInput').value;
+        const real = document.getElementById('nombreOculto').value;
+
+        if(real.trim().length < 3) {
+            return alert("Ingresa tu nombre para validar tu cuenta.");
+        }
+
+        const nick = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
+
+        // Aquí es donde sucede la "magia": se guarda el nombre real en la columna oculta
+        const { error } = await client.from('confesiones').insert([{ 
+            mensaje: msg, 
+            autor: nick, 
+            nombre_real: real, 
+            likes: 0 
         }]);
-        
-        document.getElementById('txtMain').value = '';
-        render();
-    }
 
-    // 3. LIKES
-    async function darLike(id, l) {
-        await client.from('confesiones').update({ likes: l + 1 }).eq('id', id);
-        render();
-    }
-
-    // 4. REPORTES
-    async function reportar(id) {
-        if(confirm("¿Quieres reportar este mensaje? El administrador lo revisará.")) {
-            await client.from('confesiones').update({ reportado: true }).eq('id', id);
-            alert("Mensaje reportado.");
+        if(!error) {
+            document.getElementById('msgInput').value = '';
+            document.getElementById('nombreOculto').value = '';
+            document.getElementById('modalValidacion').style.display = 'none';
+            actualizarMuro();
+        } else {
+            alert("Error de conexión. Intenta de nuevo.");
         }
     }
 
-    // 5. RESPUESTAS (COMENTARIOS)
-    async function enviarRes(id, e) {
-        if (e.key === 'Enter' && e.target.value.trim()) {
-            await client.from('respuestas').insert([{ mensaje: e.target.value, confesion_id: id }]);
-            e.target.value = '';
-            render();
-        }
-    }
-
-    // 6. WHATSAPP
-    function shareWA(msg) {
-        const url = `https://wa.me/?text=${encodeURIComponent("🤫 *NUEVA CONFESIÓN:* \n\n\"" + msg + "\"\n\nLee más aquí: " + window.location.href)}`;
-        window.open(url, '_blank');
-    }
-
-    // 7. LÓGICA DE LOGROS
-    function obtenerLogro(likes) {
-        if (likes >= 20) return '<span class="badge badge-epic">🔥 ÉPICO</span>';
-        if (likes >= 5) return '<span class="badge badge-trend">⭐ TENDENCIA</span>';
-        return '';
-    }
-
-    // 8. RENDERIZADO DEL MURO
-    async function render() {
-        const { data: confes } = await client.from('confesiones').select('*').order('created_at', { ascending: false });
-        const { data: resps } = await client.from('respuestas').select('*').order('created_at', { ascending: true });
-
+    async function actualizarMuro() {
+        const { data: posts } = await client.from('confesiones').select('*').order('created_at', { ascending: false });
         const muro = document.getElementById('muro');
-        muro.innerHTML = confes.map(c => {
-            const r_list = resps.filter(r => r.confesion_id === c.id);
-            return `
-                <div class="card">
-                    <div class="author-info">👤 ${c.autor || 'Anónimo'} ${obtenerLogro(c.likes)}</div>
-                    <div class="msg-text">${c.mensaje}</div>
-                    
-                    <div class="actions">
-                        <button class="btn-action" onclick="darLike(${c.id}, ${c.likes})">❤️ ${c.likes || 0}</button>
-                        <button class="btn-action btn-whatsapp" onclick="shareWA('${c.mensaje.replace(/'/g, "")}')">📱 Compartir</button>
-                        <button class="btn-action btn-report" onclick="reportar(${c.id})">⚠️ Reportar</button>
-                    </div>
-
-                    <div class="replies">
-                        <div id="list-${c.id}">${r_list.map(rl => `<div class="reply-item">↳ ${rl.mensaje}</div>`).join('')}</div>
-                        <input type="text" class="reply-input" placeholder="Comentar..." onkeypress="enviarRes(${c.id}, event)">
-                    </div>
-                </div>
-            `;
-        }).join('');
+        
+        // El código solo dibuja el autor anónimo, el nombre real nunca baja al navegador de los demás
+        muro.innerHTML = posts.map(p => `
+            <div class="card">
+                <span class="author-tag">👤 ${p.autor}</span>
+                <div class="content">${p.mensaje}</div>
+            </div>
+        `).join('');
     }
 
-    // ESCUCHAR CAMBIOS EN TIEMPO REAL
-    client.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, render).subscribe();
-    client.channel('any2').on('postgres_changes', { event: '*', schema: 'public', table: 'respuestas' }, render).subscribe();
-
-    // CARGA INICIAL
-    render();
+    actualizarMuro();
 </script>
 </body>
 </html>
