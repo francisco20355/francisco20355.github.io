@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Confesionario Pro | Logros & Live</title>
+    <title>Confesionario Pro | Elite Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -14,6 +14,7 @@
             --gold: #f59e0b;
             --text: #f1f5f9;
             --dim: #94a3b8;
+            --danger: #ef4444;
         }
 
         body {
@@ -28,52 +29,54 @@
 
         .container { width: 100%; max-width: 500px; }
 
-        /* Cabecera y Status */
+        /* Status de Conectados */
         header { text-align: center; padding: 20px 0; }
         .live-status { font-size: 0.75rem; color: var(--success); display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 5px; }
         .pulse { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse-animation 2s infinite; }
         @keyframes pulse-animation { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
 
-        /* Caja de Posteo */
-        .post-box { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #334155; }
-        textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 70px; }
-        .btn-post { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; }
+        /* Caja de Publicación */
+        .post-box { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+        textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 80px; }
+        .btn-post { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; transition: 0.2s; }
+        .btn-post:hover { background: #2563eb; }
 
-        /* Tarjeta de Confesión */
+        /* Tarjetas de Confesión */
         .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #334155; position: relative; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .author-info { font-size: 0.85rem; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
         .msg-text { font-size: 1.05rem; line-height: 1.5; margin-bottom: 15px; word-wrap: break-word; }
 
-        /* Logros / Medallas */
+        /* Medallas de Logros */
         .badge { font-size: 10px; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; font-weight: 800; }
         .badge-trend { background: #fbbf24; color: #78350f; }
         .badge-epic { background: #ec4899; color: white; }
 
         /* Botones de acción */
-        .actions { display: flex; gap: 12px; border-top: 1px solid #334155; padding-top: 12px; }
-        .btn-action { background: #334155; border: none; color: white; padding: 6px 12px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .actions { display: flex; gap: 8px; border-top: 1px solid #334155; padding-top: 12px; flex-wrap: wrap; }
+        .btn-action { background: #334155; border: none; color: white; padding: 6px 14px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
         .btn-action:active { transform: scale(0.9); }
         .btn-whatsapp { background: #25d366; color: white; }
+        .btn-report { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
 
-        /* Respuestas */
-        .replies { margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 10px; font-size: 0.9rem; }
-        .reply-item { padding: 4px 0; border-bottom: 1px solid #334155; color: var(--dim); }
+        /* Sección de Comentarios */
+        .replies { margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; font-size: 0.9rem; }
+        .reply-item { padding: 6px 0; border-bottom: 1px solid #334155; color: var(--dim); }
         .reply-item:last-child { border: none; }
-        .reply-input { width: 100%; background: transparent; border: none; color: white; margin-top: 8px; font-size: 0.85rem; outline: none; }
+        .reply-input { width: 100%; background: transparent; border: none; color: white; margin-top: 10px; font-size: 0.85rem; outline: none; border-bottom: 1px solid #475569; padding-bottom: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <div class="live-status"><div class="pulse"></div> <span id="online-count">1</span> personas en línea</div>
+        <div class="live-status"><div class="pulse"></div> <span id="online-count">1</span> personas conectadas</div>
         <h1 style="margin:0; font-size: 1.8rem;">🤫 Confesionario</h1>
     </header>
 
     <div class="post-box">
-        <textarea id="txtMain" placeholder="Escribe tu secreto más profundo..."></textarea>
+        <textarea id="txtMain" placeholder="Escribe tu secreto aquí de forma anónima..."></textarea>
         <div style="overflow: auto;"><button class="btn-post" onclick="publicar()">Publicar</button></div>
     </div>
 
@@ -81,13 +84,14 @@
 </div>
 
 <script>
+    // CONFIGURACIÓN DE SUPABASE
     const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const animales = ["Gato", "Lobo", "Zorro", "Panda", "Tiburón", "Águila", "León"];
+    const animales = ["Gato", "Lobo", "Zorro", "Panda", "Tiburón", "Águila", "León", "Búho", "Tigre"];
 
-    // 1. Sistema de Presencia (En línea)
+    // 1. PRESENCIA EN TIEMPO REAL
     const channel = client.channel('global');
     channel.on('presence', { event: 'sync' }, () => {
         document.getElementById('online-count').innerText = Object.keys(channel.presenceState()).length;
@@ -95,35 +99,38 @@
         if (s === 'SUBSCRIBED') await channel.track({ online_at: new Date() });
     });
 
-    // 2. Publicar
+    // 2. PUBLICAR CONFESIÓN
     async function publicar() {
         const t = document.getElementById('txtMain').value;
         if(!t.trim()) return;
         const nombre = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
-        await client.from('confesiones').insert([{ mensaje: t, autor: nombre, likes: 0 }]);
+        
+        await client.from('confesiones').insert([{ 
+            mensaje: t, 
+            autor: nombre, 
+            likes: 0, 
+            reportado: false 
+        }]);
+        
         document.getElementById('txtMain').value = '';
         render();
     }
 
-    // 3. Sistema de Logros (Cálculo visual)
-    function obtenerLogro(likes) {
-        if (likes >= 20) return '<span class="badge badge-epic">🔥 ÉPICO</span>';
-        if (likes >= 5) return '<span class="badge badge-trend">⭐ TENDENCIA</span>';
-        return '';
-    }
-
-    // 4. Compartir WhatsApp
-    function shareWA(msg) {
-        const url = `https://wa.me/?text=${encodeURIComponent("⚠️ *CONFESIÓN ANÓNIMA:* \n\n" + msg + "\n\nLee más aquí: " + window.location.href)}`;
-        window.open(url, '_blank');
-    }
-
-    // 5. Like y Render
+    // 3. LIKES
     async function darLike(id, l) {
         await client.from('confesiones').update({ likes: l + 1 }).eq('id', id);
         render();
     }
 
+    // 4. REPORTES
+    async function reportar(id) {
+        if(confirm("¿Quieres reportar este mensaje? El administrador lo revisará.")) {
+            await client.from('confesiones').update({ reportado: true }).eq('id', id);
+            alert("Mensaje reportado.");
+        }
+    }
+
+    // 5. RESPUESTAS (COMENTARIOS)
     async function enviarRes(id, e) {
         if (e.key === 'Enter' && e.target.value.trim()) {
             await client.from('respuestas').insert([{ mensaje: e.target.value, confesion_id: id }]);
@@ -132,6 +139,20 @@
         }
     }
 
+    // 6. WHATSAPP
+    function shareWA(msg) {
+        const url = `https://wa.me/?text=${encodeURIComponent("🤫 *NUEVA CONFESIÓN:* \n\n\"" + msg + "\"\n\nLee más aquí: " + window.location.href)}`;
+        window.open(url, '_blank');
+    }
+
+    // 7. LÓGICA DE LOGROS
+    function obtenerLogro(likes) {
+        if (likes >= 20) return '<span class="badge badge-epic">🔥 ÉPICO</span>';
+        if (likes >= 5) return '<span class="badge badge-trend">⭐ TENDENCIA</span>';
+        return '';
+    }
+
+    // 8. RENDERIZADO DEL MURO
     async function render() {
         const { data: confes } = await client.from('confesiones').select('*').order('created_at', { ascending: false });
         const { data: resps } = await client.from('respuestas').select('*').order('created_at', { ascending: true });
@@ -147,21 +168,23 @@
                     <div class="actions">
                         <button class="btn-action" onclick="darLike(${c.id}, ${c.likes})">❤️ ${c.likes || 0}</button>
                         <button class="btn-action btn-whatsapp" onclick="shareWA('${c.mensaje.replace(/'/g, "")}')">📱 Compartir</button>
+                        <button class="btn-action btn-report" onclick="reportar(${c.id})">⚠️ Reportar</button>
                     </div>
 
                     <div class="replies">
                         <div id="list-${c.id}">${r_list.map(rl => `<div class="reply-item">↳ ${rl.mensaje}</div>`).join('')}</div>
-                        <input type="text" class="reply-input" placeholder="Escribe un comentario..." onkeypress="enviarRes(${c.id}, event)">
+                        <input type="text" class="reply-input" placeholder="Comentar..." onkeypress="enviarRes(${c.id}, event)">
                     </div>
                 </div>
             `;
         }).join('');
     }
 
-    // Actualización en Tiempo Real
+    // ESCUCHAR CAMBIOS EN TIEMPO REAL
     client.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, render).subscribe();
     client.channel('any2').on('postgres_changes', { event: '*', schema: 'public', table: 'respuestas' }, render).subscribe();
 
+    // CARGA INICIAL
     render();
 </script>
 </body>
