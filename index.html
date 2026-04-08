@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Confesionario 6to | Oficial</title>
+    <title>Confesionario 6to | Oficial Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -32,7 +32,8 @@
         .badge { background: #ec4899; color: white; font-size: 10px; padding: 2px 8px; border-radius: 6px; }
         
         .actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 12px; border-top: 1px solid #334155; }
-        .btn-sm { background: #334155; border: none; color: white; padding: 7px 15px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+        .btn-sm { background: #334155; border: none; color: white; padding: 7px 15px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .btn-sm:active { transform: scale(0.9); }
         
         .replies { margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; }
         .reply-txt { color: var(--dim); font-size: 0.85rem; margin-bottom: 5px; }
@@ -43,9 +44,9 @@
 
 <div class="container">
     <header>
-        <div class="live"><div class="dot"></div> Sistema Protegido</div>
+        <div class="live"><div class="dot"></div> Sistema Protegido con RLS</div>
         <h1>🤫 Confesionario 6to</h1>
-        <p style="color: var(--dim); font-size: 0.8rem;">100% Anónimo para los demás.</p>
+        <p style="color: var(--dim); font-size: 0.8rem;">Seguro, anónimo y blindado.</p>
     </header>
 
     <div class="post-box">
@@ -60,20 +61,21 @@
     <div class="modal-card">
         <div style="font-size: 2rem;">🛡️</div>
         <h3>Verificación Anti-Fraude</h3>
-        <p style="font-size: 0.8rem; color: var(--dim);">Para evitar suplantación de identidad, ingresa tu nombre.<br><b>Nadie podrá ver tu nombre ni tu IP, solo el sistema.</b></p>
-        <input type="text" id="nombreReal" placeholder="Nombre completo">
+        <p style="font-size: 0.8rem; color: var(--dim);">Tu nombre e IP solo los verá el sistema para evitar spam.<br><b>En el muro aparecerás como un animal anónimo.</b></p>
+        <input type="text" id="nombreReal" placeholder="Tu nombre completo">
         <button class="btn-post" style="float:none; width:100%; padding: 15px;" onclick="enviarFinal()">Confirmar</button>
     </div>
 </div>
 
 <script>
+    // Configuración de Supabase
     const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const animales = ["Lobo", "Zorro", "Panda", "Tigre", "León", "Águila"];
+    const animales = ["Lobo", "Zorro", "Panda", "Tigre", "León", "Águila", "Leopardo", "Búho"];
 
-    // FUNCIÓN DE SEGURIDAD CONTRA INYECCIÓN (Punto 1)
+    // FUNCIÓN DE SEGURIDAD CONTRA XSS
     function escudar(texto) {
         const p = document.createElement('p');
         p.textContent = texto;
@@ -115,13 +117,19 @@
             document.getElementById('nombreReal').value = '';
             document.getElementById('modalVerifica').style.display = 'none';
             cargarDatos();
+        } else {
+            alert("Error al enviar: " + error.message);
         }
     }
 
-    async function like(id, cant) {
-        // Actualización protegida (Punto 4)
-        await client.from('confesiones').update({ likes: cant + 1 }).eq('id', id);
-        cargarDatos();
+    // FUNCIÓN DE LIKES PRO (Usa RPC para seguridad)
+    async function darLike(id) {
+        const { error } = await client.rpc('incrementar_like', { confesion_id: id });
+        if(error) {
+            console.error("Error en RLS/RPC:", error.message);
+        } else {
+            cargarDatos();
+        }
     }
 
     async function responder(id, e) {
@@ -133,9 +141,14 @@
     }
 
     async function cargarDatos() {
-        // SEGURIDAD DE DATOS: No pedimos nombre_real ni IP (Punto 2)
-        const { data: posts } = await client.from('confesiones').select('id, mensaje, autor, likes').order('created_at', { ascending: false });
-        const { data: resps } = await client.from('respuestas').select('mensaje, confesion_id').order('created_at', { ascending: true });
+        // Obtenemos datos públicos ordenados
+        const { data: posts } = await client.from('confesiones')
+            .select('id, mensaje, autor, likes')
+            .order('created_at', { ascending: false });
+            
+        const { data: resps } = await client.from('respuestas')
+            .select('mensaje, confesion_id')
+            .order('created_at', { ascending: true });
         
         const muro = document.getElementById('muro');
         if (!posts) return;
@@ -149,8 +162,8 @@
                     <div class="author">👤 ${escudar(p.autor || 'Anónimo')} ${esTop}</div>
                     <div style="font-size: 1.05rem;">${escudar(p.mensaje)}</div>
                     <div class="actions">
-                        <button class="btn-sm" onclick="like(${p.id}, ${p.likes || 0})">❤️ ${p.likes || 0}</button>
-                        <button class="btn-sm" style="background:#25d366" onclick="window.open('https://wa.me/?text=${encodeURIComponent(p.mensaje)}')">WhatsApp</button>
+                        <button class="btn-sm" onclick="darLike(${p.id})">❤️ ${p.likes || 0}</button>
+                        <button class="btn-sm" style="background:#25d366" onclick="window.open('https://wa.me/?text=${encodeURIComponent('Mira esta confesión: ' + p.mensaje)}')">WhatsApp</button>
                     </div>
                     <div class="replies">
                         ${mis_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
@@ -161,7 +174,10 @@
         }).join('');
     }
 
+    // Escuchar cambios en tiempo real
     client.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, cargarDatos).subscribe();
+    
+    // Carga inicial
     cargarDatos();
 </script>
 </body>
