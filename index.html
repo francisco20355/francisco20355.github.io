@@ -35,6 +35,9 @@
         .btn-sm { background: #334155; border: none; color: white; padding: 7px 15px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
         .btn-sm:active { transform: scale(0.9); }
         
+        /* Estado deshabilitado para el botón de Like */
+        .btn-sm:disabled { opacity: 0.6; cursor: not-allowed; border: 1px solid var(--success); color: var(--success); }
+        
         .replies { margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; }
         .reply-txt { color: var(--dim); font-size: 0.85rem; margin-bottom: 5px; }
         .reply-in { width: 100%; background: transparent; border: none; color: white; border-bottom: 1px solid #475569; outline: none; font-size: 0.85rem; }
@@ -122,12 +125,23 @@
         }
     }
 
-    // FUNCIÓN DE LIKES PRO (Usa RPC para seguridad)
+    // FUNCIÓN DE LIKES CON BLOQUEO LOCAL
     async function darLike(id) {
+        // Revisamos si ya existe el like en el almacenamiento local
+        let misLikes = JSON.parse(localStorage.getItem('mis_likes_app') || '[]');
+        
+        if(misLikes.includes(id)) {
+            return; // Ya le dio like, no hacemos nada
+        }
+
         const { error } = await client.rpc('incrementar_like', { confesion_id: id });
+        
         if(error) {
             console.error("Error en RLS/RPC:", error.message);
         } else {
+            // Guardamos el ID en el almacenamiento local para que no pueda repetir
+            misLikes.push(id);
+            localStorage.setItem('mis_likes_app', JSON.stringify(misLikes));
             cargarDatos();
         }
     }
@@ -153,16 +167,24 @@
         const muro = document.getElementById('muro');
         if (!posts) return;
 
+        // Recuperamos los likes que el usuario ya dio
+        const misLikes = JSON.parse(localStorage.getItem('mis_likes_app') || '[]');
+
         muro.innerHTML = posts.map(p => {
             const mis_resps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
             const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
+            
+            // Verificamos si este post específico ya tiene like del usuario
+            const yaVoto = misLikes.includes(p.id);
             
             return `
                 <div class="card">
                     <div class="author">👤 ${escudar(p.autor || 'Anónimo')} ${esTop}</div>
                     <div style="font-size: 1.05rem;">${escudar(p.mensaje)}</div>
                     <div class="actions">
-                        <button class="btn-sm" onclick="darLike(${p.id})">❤️ ${p.likes || 0}</button>
+                        <button class="btn-sm" onclick="darLike(${p.id})" ${yaVoto ? 'disabled' : ''}>
+                            ${yaVoto ? '✅' : '❤️'} ${p.likes || 0}
+                        </button>
                         <button class="btn-sm" style="background:#25d366" onclick="window.open('https://wa.me/?text=${encodeURIComponent('Mira esta confesión: ' + p.mensaje)}')">WhatsApp</button>
                     </div>
                     <div class="replies">
