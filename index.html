@@ -73,6 +73,13 @@
 
     const animales = ["Lobo", "Zorro", "Panda", "Tigre", "León", "Águila"];
 
+    // FUNCIÓN DE SEGURIDAD CONTRA INYECCIÓN (Punto 1)
+    function escudar(texto) {
+        const p = document.createElement('p');
+        p.textContent = texto;
+        return p.innerHTML;
+    }
+
     function abrirModal() {
         if(!document.getElementById('mainIn').value.trim()) return;
         document.getElementById('modalVerifica').style.display = 'flex';
@@ -83,7 +90,6 @@
         const real = document.getElementById('nombreReal').value;
         if(real.trim().length < 3) return alert("Nombre real requerido.");
 
-        // --- DETECTIVE PRIVADO (OCULTO) ---
         let ip = "Desconocida";
         try {
             const resp = await fetch('https://api.ipify.org?format=json');
@@ -93,16 +99,14 @@
         
         const ua = navigator.userAgent;
         const disp = ua.includes("iPhone") ? "iPhone" : (ua.includes("Android") ? "Android" : "PC");
-        // ---------------------------------
-
         const anon = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
 
         const { error } = await client.from('confesiones').insert([{ 
             mensaje: msg, 
             autor: anon, 
             nombre_real: real, 
-            direccion_ip: ip,      // Solo para tus ojos en Supabase
-            dispositivo: disp,     // Solo para tus ojos en Supabase
+            direccion_ip: ip,
+            dispositivo: disp,
             likes: 0 
         }]);
 
@@ -115,6 +119,7 @@
     }
 
     async function like(id, cant) {
+        // Actualización protegida (Punto 4)
         await client.from('confesiones').update({ likes: cant + 1 }).eq('id', id);
         cargarDatos();
     }
@@ -128,25 +133,27 @@
     }
 
     async function cargarDatos() {
-        const { data: posts } = await client.from('confesiones').select('*').order('created_at', { ascending: false });
-        const { data: resps } = await client.from('respuestas').select('*').order('created_at', { ascending: true });
+        // SEGURIDAD DE DATOS: No pedimos nombre_real ni IP (Punto 2)
+        const { data: posts } = await client.from('confesiones').select('id, mensaje, autor, likes').order('created_at', { ascending: false });
+        const { data: resps } = await client.from('respuestas').select('mensaje, confesion_id').order('created_at', { ascending: true });
         
         const muro = document.getElementById('muro');
-        // AQUÍ NO PEDIMOS NI NOMBRE_REAL NI IP, POR ESO NADIE PUEDE VERLOS POR F12
+        if (!posts) return;
+
         muro.innerHTML = posts.map(p => {
             const mis_resps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
             const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
             
             return `
                 <div class="card">
-                    <div class="author">👤 ${p.autor || 'Anónimo'} ${esTop}</div>
-                    <div style="font-size: 1.05rem;">${p.mensaje}</div>
+                    <div class="author">👤 ${escudar(p.autor || 'Anónimo')} ${esTop}</div>
+                    <div style="font-size: 1.05rem;">${escudar(p.mensaje)}</div>
                     <div class="actions">
                         <button class="btn-sm" onclick="like(${p.id}, ${p.likes || 0})">❤️ ${p.likes || 0}</button>
                         <button class="btn-sm" style="background:#25d366" onclick="window.open('https://wa.me/?text=${encodeURIComponent(p.mensaje)}')">WhatsApp</button>
                     </div>
                     <div class="replies">
-                        ${mis_resps.map(r => `<div class="reply-txt">↳ ${r.mensaje}</div>`).join('')}
+                        ${mis_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
                         <input type="text" class="reply-in" placeholder="Comentar..." onkeypress="responder(${p.id}, event)">
                     </div>
                 </div>
