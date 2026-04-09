@@ -3,260 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Confesionario Master | Live</title>
+    <title>Confesionario Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg: #0f172a; --card: #1e293b; --accent: #3b82f6;
-            --success: #10b981; --text: #f1f5f9; --dim: #94a3b8; --danger: #ef4444; --admin-msg: #4f46e5;
-        }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        
-        /* BARRA DE ANUNCIO ROJA */
-        #globalAlert { display:none; background: #dc2626; color: white; padding: 14px; text-align: center; font-weight: bold; width: 100%; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid #7f1d1d; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; --text: #f1f5f9; --dim: #94a3b8; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; }
+        #globalAlert { display:none; background: #dc2626; color: white; padding: 10px; text-align: center; width: 100%; position: sticky; top: 0; z-index: 1000; font-weight: bold; }
         .container { width: 100%; max-width: 500px; padding: 15px; box-sizing: border-box; }
-        header { text-align: center; padding: 20px 0; }
-        
-        /* CONTADOR */
-        .stats { font-size: 0.75rem; color: var(--dim); background: rgba(255,255,255,0.05); padding: 6px 15px; border-radius: 20px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.1); }
-        .dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
-
-        .post-box { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 25px; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 100px; font-family: inherit; }
-        .btn-post { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; transition: 0.2s; }
-        .btn-post:active { transform: scale(0.95); }
-
-        /* CARDS DE CONFESIONES */
-        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 18px; border: 1px solid #334155; position: relative; animation: slideUp 0.4s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .author { font-size: 0.85rem; font-weight: bold; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .badge { font-size: 10px; padding: 2px 8px; border-radius: 6px; color: white; font-weight: bold; text-transform: uppercase; background: #8b5cf6; }
-
-        .btn-like { background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; padding: 8px 16px; border-radius: 12px; margin-top: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
-        .btn-like:hover { background: rgba(255,255,255,0.1); }
-
-        /* PANEL ADMIN INTERNO */
-        .admin-controls { display: none; margin-top: 15px; padding: 12px; background: rgba(59, 130, 246, 0.1); border-radius: 12px; border: 1px dashed var(--accent); gap: 8px; flex-wrap: wrap; }
-        .btn-adm { font-size: 11px; padding: 6px 12px; border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: bold; }
-
-        /* COMENTARIOS */
-        .replies { margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 12px; }
-        .reply-item { font-size: 0.85rem; margin-bottom: 8px; padding: 8px; border-radius: 8px; color: var(--dim); line-height: 1.4; }
-        .reply-admin { background: var(--admin-msg); color: white !important; font-weight: bold; border-left: 4px solid white; }
-        .reply-in { width: 100%; background: transparent; border: none; color: white; border-bottom: 1px solid #475569; outline: none; font-size: 0.85rem; margin-top: 10px; padding: 5px 0; }
-
-        /* GEAR FLOTANTE */
-        #adminGear { position:fixed; bottom:25px; left:25px; width:50px; height:50px; background: #1e293b; border: 2px solid var(--accent); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; cursor:pointer; z-index: 3000; box-shadow: 0 5px 15px rgba(0,0,0,0.4); font-size: 24px; transition: 0.3s; }
-        #adminGear:hover { transform: rotate(45deg); }
-
-        /* MODAL VERIFICACION */
-        #modalVerifica { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 5000; backdrop-filter: blur(5px); }
-        .modal-content { background: var(--card); padding: 30px; border-radius: 25px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 380px; border: 1px solid #334155; text-align: center; }
-        .modal-content input { width: 100%; padding: 15px; margin: 15px 0; border-radius: 12px; background: #0f172a; color: white; border: 1px solid #475569; box-sizing: border-box; font-size: 16px; }
+        .post-box { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid #334155; }
+        textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; min-height: 80px; resize: none; }
+        .btn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .card { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid #334155; }
+        .author { color: var(--accent); font-size: 0.8rem; font-weight: bold; margin-bottom: 8px; }
+        .reply-box { margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; font-size: 0.85rem; }
+        #adminGear { position: fixed; bottom: 20px; left: 20px; cursor: pointer; opacity: 0.5; font-size: 24px; }
     </style>
 </head>
 <body>
 
-<div id="globalAlert">
-    <span id="alertText">📢 Cargando anuncio...</span>
-</div>
+<div id="globalAlert"></div>
 
 <div class="container">
-    <header>
-        <h1 style="margin:0; font-size: 2.2rem;">🤫 Confesionario</h1>
-        <div class="stats">
-            <div class="dot"></div> <span id="visitCount">0</span> visitas totales
-        </div>
+    <header style="text-align:center; padding: 20px;">
+        <h1 style="margin:0">🤫 Confesionario</h1>
+        <p id="stats" style="font-size: 0.8rem; color: var(--dim);">Cargando...</p>
     </header>
 
     <div class="post-box">
-        <textarea id="mainIn" placeholder="¿Qué tienes para confesar hoy? Nadie sabrá quién eres..."></textarea>
-        <div style="overflow: auto; width: 100%;">
-            <button class="btn-post" onclick="abrirModal()">Publicar</button>
-        </div>
+        <textarea id="msgIn" placeholder="Escribe tu secreto..."></textarea>
+        <div style="text-align: right;"><button class="btn" onclick="document.getElementById('modal').style.display='flex'">Publicar</button></div>
     </div>
 
-    <div id="muro"></div>
+    <div id="muro">Cargando confesiones...</div>
 </div>
 
-<!-- Modal Nombre Real -->
-<div id="modalVerifica">
-    <div class="modal-content">
-        <h3 style="margin-top:0">🛡️ Filtro de Seguridad</h3>
-        <p style="font-size: 0.85rem; color: var(--dim);">Tu nombre real solo lo verá el administrador para evitar spam.</p>
-        <input type="text" id="nombreReal" placeholder="Nombre completo">
-        <button class="btn-post" style="width:100%; float:none; padding: 15px;" onclick="enviarFinal()">Confirmar y Publicar</button>
+<div id="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:2000;">
+    <div style="background:var(--card); padding:20px; border-radius:15px; width:80%; max-width:300px;">
+        <h3 style="margin-top:0">Identidad Real</h3>
+        <p style="font-size:0.7rem; color:gray">Solo el admin verá tu nombre real.</p>
+        <input type="text" id="nombreReal" placeholder="Nombre completo" style="width:100%; padding:10px; margin-bottom:10px; border-radius:5px; border:1px solid #444; background:#0f172a; color:white;">
+        <button class="btn" style="width:100%" onclick="enviar()">Enviar Confesión</button>
     </div>
 </div>
 
 <div id="adminGear" onclick="loginAdmin()">⚙️</div>
 
 <script>
-    // CONFIGURACIÓN SUPABASE
     const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let isAdmin = false;
 
-    // --- CARGAR TODO ---
-    async function cargarMuro() {
-        console.log("Actualizando muro...");
-
-        // 1. Config (Anuncio y Visitas)
-        const { data: configs } = await client.from('config').select('*');
-        if (configs) {
-            const an = configs.find(c => c.clave === 'anuncio')?.valor;
-            const vi = configs.find(c => c.clave === 'visitas')?.valor;
-            if (an && an.trim() !== "") {
-                document.getElementById('alertText').innerText = "📢 " + an;
-                document.getElementById('globalAlert').style.display = 'block';
-            } else {
-                document.getElementById('globalAlert').style.display = 'none';
+    async function cargarDatos() {
+        try {
+            // 1. Config (Anuncio y Visitas)
+            const { data: config } = await client.from('config').select('*');
+            if (config) {
+                const anuncio = config.find(c => c.clave === 'anuncio')?.valor;
+                const visitas = config.find(c => c.clave === 'visitas')?.valor;
+                if (anuncio) {
+                    document.getElementById('globalAlert').innerText = "📢 " + anuncio;
+                    document.getElementById('globalAlert').style.display = 'block';
+                }
+                document.getElementById('stats').innerText = `${visitas || 0} visitas`;
             }
-            document.getElementById('visitCount').innerText = vi || 0;
-        }
 
-        // 2. Confesiones (Select específico para no fallar por RLS)
-        const { data: posts, error: postErr } = await client.from('confesiones')
-            .select('id, mensaje, autor, likes, etiqueta_admin, created_at')
-            .order('id', { ascending: false });
+            // 2. Confesiones (Columnas exactas según tu imagen)
+            const { data: posts, error: errPosts } = await client.from('confesiones')
+                .select('id, mensaje, autor, likes')
+                .order('id', { ascending: false });
 
-        if (postErr) {
-            console.error("Error al leer:", postErr);
-            return;
-        }
+            if (errPosts) throw errPosts;
 
-        // 3. Respuestas
-        const { data: resps } = await client.from('respuestas').select('*').order('created_at', { ascending: true });
-        
-        const muro = document.getElementById('muro');
-        if (!posts || posts.length === 0) {
-            muro.innerHTML = "<p style='text-align:center; color:gray; margin-top:20px'>Aún no hay confesiones. ¡Sé el primero!</p>";
-            return;
-        }
+            const { data: resps } = await client.from('respuestas').select('*');
 
-        muro.innerHTML = posts.map(p => {
-            const rFiltradas = resps ? resps.filter(r => r.confesion_id === p.id) : [];
-            const badge = p.etiqueta_admin ? `<span class="badge">${p.etiqueta_admin}</span>` : "";
-
-            return `
-                <div class="card">
-                    <div class="author">👤 ${p.autor} ${badge}</div>
-                    <div style="color:white; font-size:1.1rem; line-height:1.4;">${p.mensaje}</div>
-                    
-                    <button class="btn-like" onclick="darLike(${p.id})">❤️ ${p.likes || 0}</button>
-
-                    <div class="admin-controls" style="display:${isAdmin ? 'flex' : 'none'}">
-                        <button class="btn-adm" style="background:var(--accent)" onclick="tagPost(${p.id})">Etiquetar</button>
-                        <button class="btn-adm" style="background:var(--danger)" onclick="delPost(${p.id})">Borrar</button>
-                    </div>
-
-                    <div class="replies">
-                        ${rFiltradas.map(r => `
-                            <div class="reply-item ${r.es_admin ? 'reply-admin' : ''}">
-                                ${r.es_admin ? '🛡️ ' : '↳ '} ${r.mensaje}
-                                ${isAdmin ? `<span onclick="delResp(${r.id})" style="color:red; cursor:pointer; margin-left:10px;">×</span>` : ''}
-                            </div>`).join('')}
-                        <input type="text" class="reply-in" placeholder="Escribe un comentario..." onkeypress="responder(${p.id}, event)">
-                    </div>
-                </div>`;
-        }).join('');
-    }
-
-    // --- FUNCIONES ADMIN ---
-    async function loginAdmin() {
-        const pw = prompt("Introduce la clave maestra:");
-        if(!pw) return;
-
-        // Buscamos en tu tabla config_secreta
-        const { data, error } = await client.from('config_secreta').select('valor').eq('clave', 'admin_pass').single();
-        
-        if (data && data.valor === pw) {
-            isAdmin = true;
-            alert("Acceso concedido 🛡️");
-            const op = prompt("1: Panel / 2: Cambiar Anuncio / 3: Borrar Todo");
-            if (op === "2") {
-                const msg = prompt("Nuevo mensaje (vacío para quitar):");
-                await client.from('config').update({ valor: msg }).eq('clave', 'anuncio');
-            } else if (op === "3") {
-                if(confirm("¿Borrar todo el muro?")) await client.from('confesiones').delete().neq('id', 0);
+            const muro = document.getElementById('muro');
+            if (!posts || posts.length === 0) {
+                muro.innerHTML = "No hay confesiones todavía.";
+                return;
             }
-            cargarMuro();
-        } else {
-            alert("Clave incorrecta.");
+
+            muro.innerHTML = posts.map(p => {
+                const misResps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
+                return `
+                    <div class="card">
+                        <div class="author">👤 ${p.autor || 'Anónimo'}</div>
+                        <div style="font-size:1.1rem">${p.mensaje}</div>
+                        <div style="margin-top:10px;">
+                            <button onclick="like(${p.id})" style="background:none; border:1px solid #444; color:white; border-radius:5px; cursor:pointer">❤️ ${p.likes || 0}</button>
+                            ${isAdmin ? `<button onclick="borrar(${p.id})" style="color:red; background:none; border:none; margin-left:10px; cursor:pointer">Eliminar</button>` : ''}
+                        </div>
+                        <div class="reply-box">
+                            ${misResps.map(r => `<div style="margin-bottom:5px; ${r.es_admin ? 'color:#3b82f6; font-weight:bold' : ''}">${r.es_admin ? '🛡️' : '↳'} ${r.mensaje}</div>`).join('')}
+                            <input type="text" placeholder="Comentar..." onkeypress="responder(${p.id}, event)" style="width:100%; background:transparent; border:none; border-bottom:1px solid #444; color:white; outline:none; font-size:0.8rem; margin-top:5px;">
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+        } catch (e) {
+            console.error(e);
+            document.getElementById('muro').innerHTML = "Error al cargar datos.";
         }
     }
 
-    async function tagPost(id) {
-        const t = prompt("Texto de la etiqueta:");
-        if(t !== null) await client.from('confesiones').update({ etiqueta_admin: t }).eq('id', id);
-        cargarMuro();
-    }
-
-    async function delPost(id) { if(confirm("¿Eliminar post?")) { await client.from('confesiones').delete().eq('id', id); cargarMuro(); } }
-    async function delResp(id) { await client.from('respuestas').delete().eq('id', id); cargarMuro(); }
-
-    // --- FUNCIONES USUARIO ---
-    function abrirModal() {
-        if(document.getElementById('mainIn').value.trim() === "") return alert("Escribe algo primero.");
-        document.getElementById('modalVerifica').style.display = 'block';
-    }
-
-    async function enviarFinal() {
-        const msg = document.getElementById('mainIn').value;
+    async function enviar() {
+        const msg = document.getElementById('msgIn').value;
         const real = document.getElementById('nombreReal').value;
-        if(real.trim().length < 2) return alert("Por favor, pon tu nombre real.");
+        if (!msg || !real) return alert("Faltan datos");
 
-        const anons = ["Lobo", "Zorro", "Gato", "Panda", "Águila", "León"];
-        const alias = anons[Math.floor(Math.random() * anons.length)] + " Anónimo";
+        const { error } = await client.from('confesiones').insert([
+            { mensaje: msg, autor: "Anónimo", nombre_real: real, likes: 0 }
+        ]);
 
-        await client.from('confesiones').insert([{
-            mensaje: msg,
-            autor: alias,
-            nombre_real: real,
-            likes: 0
-        }]);
-
-        document.getElementById('mainIn').value = "";
-        document.getElementById('nombreReal').value = "";
-        document.getElementById('modalVerifica').style.display = 'none';
-        cargarMuro();
+        if (error) alert("Error: " + error.message);
+        else {
+            document.getElementById('msgIn').value = "";
+            document.getElementById('modal').style.display = 'none';
+            cargarDatos();
+        }
     }
 
-    async function darLike(id) {
-        await client.rpc('incrementar_like', { confesion_id: id });
-        cargarMuro();
+    async function loginAdmin() {
+        const p = prompt("Clave Maestra:");
+        // Ajustado a tu columna 'clave_admin'
+        const { data } = await client.from('config_secreta').select('clave_admin').single();
+        if (data && data.clave_admin === p) {
+            isAdmin = true;
+            alert("Acceso Administrador");
+            const act = prompt("1: Cambiar Anuncio / 2: Ver Muro");
+            if(act === "1") {
+                const nuevo = prompt("Mensaje del anuncio:");
+                await client.from('config').update({ valor: nuevo }).eq('clave', 'anuncio');
+            }
+            cargarDatos();
+        }
     }
 
     async function responder(id, e) {
-        if(e.key === 'Enter' && e.target.value.trim() !== ""){
-            await client.from('respuestas').insert([{
-                mensaje: e.target.value,
-                confesion_id: id,
-                es_admin: isAdmin
+        if (e.key === 'Enter' && e.target.value) {
+            await client.from('respuestas').insert([{ 
+                confesion_id: id, 
+                mensaje: e.target.value, 
+                es_admin: isAdmin 
             }]);
-            e.target.value = '';
-            cargarMuro();
+            e.target.value = "";
+            cargarDatos();
         }
     }
 
-    // --- INICIO ---
-    window.onload = async () => {
-        // Incrementar visitas al entrar (solo una vez por sesión)
-        if (!sessionStorage.getItem('visited')) {
-            await client.rpc('incrementar_visitas_config');
-            sessionStorage.setItem('visited', 'true');
+    async function like(id) {
+        await client.rpc('incrementar_like', { confesion_id: id });
+        cargarDatos();
+    }
+
+    async function borrar(id) {
+        if(confirm("¿Eliminar para siempre?")) {
+            await client.from('confesiones').delete().eq('id', id);
+            cargarDatos();
         }
-        cargarMuro();
+    }
+
+    window.onload = () => {
+        client.rpc('incrementar_visitas_config').catch(() => {});
+        cargarDatos();
     };
 
-    // Escuchar cambios en tiempo real
-    client.channel('any').on('postgres_changes', { event: '*', schema: 'public' }, cargarMuro).subscribe();
-
+    client.channel('public').on('postgres_changes', { event: '*', schema: 'public' }, () => cargarDatos()).subscribe();
 </script>
 </body>
 </html>
