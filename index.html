@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Confesionario Oficial Pro | Admin Edition</title>
+    <title>Confesionario Oficial | Pro Admin</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -12,7 +12,7 @@
         }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; }
         
-        /* Barra de Anuncio Global */
+        /* Barra de Anuncio Superior */
         #globalAlert { display:none; background: #dc2626; color: white; padding: 12px; text-align: center; font-weight: bold; position: sticky; top: 0; z-index: 999; width: 100%; border-bottom: 2px solid #991b1b; }
 
         .container { width: 100%; max-width: 500px; padding: 10px; box-sizing: border-box; }
@@ -27,36 +27,44 @@
         .btn-post { background: var(--accent); color: white; border: none; padding: 10px 22px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; transition: 0.2s; }
         .btn-post:active { transform: scale(0.95); }
 
-        /* Estilos de los Posts */
-        .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #334155; animation: slideUp 0.4s ease forwards; }
+        /* Estilo de las Confesiones */
+        .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #334155; animation: slideUp 0.4s ease forwards; text-align: left; width: 100%; box-sizing: border-box; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
         .author { font-size: 0.8rem; font-weight: bold; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         .badge { background: #ec4899; color: white; font-size: 10px; padding: 2px 8px; border-radius: 6px; }
         
         .actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 12px; border-top: 1px solid #334155; }
         .btn-sm { background: #334155; border: none; color: white; padding: 7px 15px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+        .btn-sm:disabled { opacity: 0.6; cursor: not-allowed; border: 1px solid var(--success); color: var(--success); }
+
+        /* Respuestas/Comentarios */
+        .replies { margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; }
+        .reply-txt { color: var(--dim); font-size: 0.85rem; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 3px; }
+        .reply-in { width: 100%; background: transparent; border: none; color: white; border-bottom: 1px solid #475569; outline: none; font-size: 0.85rem; margin-top: 8px; }
 
         /* Modales */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.98); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
         .modal-card { background: var(--card); padding: 30px; border-radius: 28px; width: 85%; max-width: 400px; text-align: center; border: 1px solid #334155; }
         .modal-card input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
 
-        /* Botón Invisible Admin */
-        #adminTrigger { position:fixed; bottom:10px; left:10px; width:30px; height:30px; opacity:0.1; cursor:pointer; z-index: 1000; }
+        /* BOTÓN ADMIN AHORA VISIBLE */
+        #adminTrigger { position:fixed; bottom:15px; left:15px; width:40px; height:40px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--accent); border-radius: 50%; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor:pointer; z-index: 10001; box-shadow: 0 4px 6px rgba(0,0,0,0.3); backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
 
+<!-- Alerta Global -->
 <div id="globalAlert">
-    <span id="alertText">📢 ANUNCIO ACTIVO</span>
-    <button onclick="cerrarAlerta()" style="background:none; border:none; color:white; font-weight:bold; cursor:pointer; margin-left:15px;">✕</button>
+    <span id="alertText">📢 ANUNCIO</span>
+    <button onclick="cerrarAlerta()" style="background:none; border:none; color:white; font-weight:bold; cursor:pointer; margin-left:15px; font-size:1.1rem;">✕</button>
 </div>
 
 <div class="container">
     <header>
-        <div class="live"><div class="dot"></div> Sistema Protegido con RLS</div>
-        <h1>🤫 Confesionario Oficial</h1>
-        <p style="color: var(--dim); font-size: 0.8rem;">Seguro, anónimo y moderado.</p>
+        <div class="live"><div class="dot"></div> SISTEMA PROTEGIDO CON RLS</div>
+        <h1 style="font-size: 2.2rem; margin: 10px 0;">🤫 Confesionario Oficial</h1>
+        <p style="color: var(--dim); font-size: 0.9rem;">Seguro, anónimo y moderado.</p>
     </header>
 
     <div class="post-box">
@@ -67,32 +75,34 @@
     <div id="muro"></div>
 </div>
 
-<!-- Modal Verificación Usuario -->
+<!-- Modal Registro Usuario -->
 <div id="modalVerifica" class="modal-overlay">
     <div class="modal-card">
         <div style="font-size: 2.5rem;">🛡️</div>
-        <h3>Verificación de Identidad</h3>
-        <p style="font-size: 0.8rem; color: var(--dim);">Tu nombre e IP quedan registrados para evitar abusos.</p>
-        <input type="text" id="nombreReal" placeholder="Tu nombre real">
-        <button class="btn-post" style="float:none; width:100%; padding: 15px;" onclick="enviarFinal()">Confirmar Envío</button>
+        <h3>Verificación Anti-Fraude</h3>
+        <p style="font-size: 0.8rem; color: var(--dim); margin-bottom: 15px;">Tu nombre e IP solo los verá el sistema.</p>
+        <input type="text" id="nombreReal" placeholder="Tu nombre completo">
+        <button class="btn-post" style="float:none; width:100%; padding: 15px;" onclick="enviarFinal()">Confirmar</button>
     </div>
 </div>
 
-<!-- Panel de Admin Secreto -->
+<!-- Panel Admin -->
 <div id="panelAdmin" class="modal-overlay">
     <div class="modal-card" style="border: 2px solid var(--accent);">
-        <h3>⚙️ Centro de Mando</h3>
-        <input type="text" id="adminCommandInput" placeholder="Nombre o mensaje...">
-        <button class="btn-post" style="float:none; width:100%; margin-bottom:8px;" onclick="lanzarEvento()">Lanzar como Post 🔥</button>
-        <button class="btn-post" style="float:none; width:100%; margin-bottom:8px; background:var(--warning);" onclick="publicarAnuncio()">Poner en Barra Roja 📢</button>
-        <button class="btn-post" style="float:none; width:100%; background:var(--danger);" onclick="resetTodo()">🔥 BORRAR TODO</button>
-        <button class="btn-sm" style="margin-top:20px; width:100%; justify-content:center;" onclick="cerrarAdmin()">Salir del Panel</button>
+        <h3>⚙️ Centro de Mando Admin</h3>
+        <input type="text" id="adminCommandInput" placeholder="Nombre o mensaje para anuncio...">
+        <button class="btn-post" style="float:none; width:100%; margin-bottom:10px;" onclick="lanzarEvento()">Lanzar como Post 🔥</button>
+        <button class="btn-post" style="float:none; width:100%; margin-bottom:10px; background:var(--warning);" onclick="publicarAnuncio()">Poner en Barra Roja 📢</button>
+        <button class="btn-post" style="float:none; width:100%; background:var(--danger);" onclick="resetTodo()">🔥 VACIAR MURO</button>
+        <button class="btn-sm" style="margin-top:20px; width:100%; justify-content:center;" onclick="cerrarAdmin()">Cerrar Panel</button>
     </div>
 </div>
 
-<div id="adminTrigger" onclick="checkAdmin()"></div>
+<!-- BOTÓN ADMIN VISIBLE ⚙️ -->
+<div id="adminTrigger" onclick="checkAdmin()">⚙️</div>
 
 <script>
+    // CONFIGURACIÓN SUPABASE
     const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -105,7 +115,7 @@
         return p.innerHTML;
     }
 
-    // --- FUNCIONES DE USUARIO ---
+    // --- LÓGICA DE USUARIO ---
     function abrirModal() {
         if(!document.getElementById('mainIn').value.trim()) return;
         document.getElementById('modalVerifica').style.display = 'flex';
@@ -114,29 +124,39 @@
     async function enviarFinal() {
         const msg = document.getElementById('mainIn').value;
         const real = document.getElementById('nombreReal').value;
-        if(real.trim().length < 3) return alert("Escribe tu nombre completo.");
+        if(real.trim().length < 3) return alert("Nombre real requerido.");
 
         let ip = "0.0.0.0";
         try { const resp = await fetch('https://api.ipify.org?format=json'); const data = await resp.json(); ip = data.ip; } catch(e) {}
         
+        // Recuperé tu variable dispositivo original
         const ua = navigator.userAgent;
         const disp = ua.includes("iPhone") ? "iPhone" : (ua.includes("Android") ? "Android" : "PC");
         const anon = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
 
         const { error } = await client.from('confesiones').insert([{ 
-            mensaje: msg, autor: anon, nombre_real: real, direccion_ip: ip, dispositivo: disp, likes: 0 
+            mensaje: msg, 
+            autor: anon, 
+            nombre_real: real, 
+            direccion_ip: ip, 
+            dispositivo: disp, 
+            likes: 0 
         }]);
 
         if(!error) {
             document.getElementById('mainIn').value = '';
             document.getElementById('nombreReal').value = '';
             document.getElementById('modalVerifica').style.display = 'none';
+            cargarDatos();
+        } else {
+            console.error("Error enviando:", error);
         }
     }
 
     async function darLike(id) {
         let misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
         if(misLikes.includes(id)) return;
+        
         const { error } = await client.rpc('incrementar_like', { confesion_id: id });
         if(!error) {
             misLikes.push(id);
@@ -145,11 +165,64 @@
         }
     }
 
-    // --- FUNCIONES DE ADMIN ---
+    async function responder(id, e) {
+        if(e.key === 'Enter' && e.target.value.trim()){
+            const { error } = await client.from('respuestas').insert([{ mensaje: e.target.value, confesion_id: id }]);
+            if(!error) {
+                e.target.value = '';
+                cargarDatos();
+            }
+        }
+    }
+
+    // --- CARGA DE DATOS (AQUÍ ESTABA EL ERROR) ---
+    async function cargarDatos() {
+        // SOLUCIÓN: Volvemos a pedir SOLO las columnas permitidas por el RLS (sin nombre_real ni IP)
+        const { data: posts, error: errorP } = await client.from('confesiones')
+            .select('id, mensaje, autor, likes') 
+            .order('created_at', { ascending: false });
+        
+        // Lo mismo para las respuestas
+        const { data: resps, error: errorR } = await client.from('respuestas')
+            .select('mensaje, confesion_id')
+            .order('created_at', { ascending: true });
+        
+        if (errorP) {
+            console.error("Error cargando posts:", errorP);
+            return;
+        }
+
+        const muro = document.getElementById('muro');
+        const misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
+
+        muro.innerHTML = posts.map(p => {
+            const yaVoto = misLikes.includes(p.id);
+            const las_resps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
+            const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
+            
+            return `
+                <div class="card">
+                    <div class="author">👤 ${escudar(p.autor)} ${esTop}</div>
+                    <div style="font-size: 1.1rem; color: white;">${escudar(p.mensaje)}</div>
+                    <div class="actions">
+                        <button class="btn-sm" onclick="darLike(${p.id})" ${yaVoto ? 'disabled' : ''}>
+                            ${yaVoto ? '✅' : '❤️'} ${p.likes || 0}
+                        </button>
+                        <button class="btn-sm" style="background:#25d366" onclick="window.open('https://wa.me/?text=${encodeURIComponent(p.mensaje)}')">WhatsApp</button>
+                    </div>
+                    <div class="replies">
+                        ${las_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
+                        <input type="text" class="reply-in" placeholder="Comentar algo..." onkeypress="responder(${p.id}, event)">
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    // --- LÓGICA DE ADMINISTRADOR ---
     async function checkAdmin() {
-        const pw = prompt("Clave Maestra:");
+        const pw = prompt("Clave de Administrador:");
         if(!pw) return;
-        const { data: esAdmin } = await client.rpc('verificar_admin', { pass_ingresada: pw });
+        const { data: esAdmin, error } = await client.rpc('verificar_admin', { pass_ingresada: pw });
         if(esAdmin) document.getElementById('panelAdmin').style.display = 'flex';
         else alert("Acceso denegado.");
     }
@@ -157,20 +230,21 @@
     function cerrarAdmin() { document.getElementById('panelAdmin').style.display = 'none'; }
 
     async function lanzarEvento() {
-        const nombre = document.getElementById('adminCommandInput').value;
-        if(!nombre) return;
+        const n = document.getElementById('adminCommandInput').value;
+        if(!n) return;
         await client.from('confesiones').insert([{ 
-            mensaje: `🔥 EVENTO: ¿Qué opinan de ${nombre.toUpperCase()}?`, 
-            autor: "🛡️ ADMIN", nombre_real: "ADMIN", direccion_ip: "127.0.0.1", likes: 999 
+            mensaje: `🔥 EVENTO: ¿Qué opinan de ${n.toUpperCase()}?`, 
+            autor: "🛡️ ADMIN", likes: 999, nombre_real: "ADMIN", direccion_ip: "127.0.0.1", dispositivo: "PC"
         }]);
         cerrarAdmin();
+        cargarDatos();
     }
 
     function publicarAnuncio() {
-        const texto = document.getElementById('adminCommandInput').value;
-        if(!texto) return;
-        localStorage.setItem('anuncio_global', texto);
-        mostrarBarra(texto);
+        const t = document.getElementById('adminCommandInput').value;
+        if(!t) return;
+        localStorage.setItem('anuncio_global', t);
+        mostrarBarra(t);
         cerrarAdmin();
     }
 
@@ -185,41 +259,26 @@
     }
 
     async function resetTodo() {
-        if(!confirm("¿Borrar TODO?")) return;
-        await client.from('confesiones').delete().neq('id', 0);
-        location.reload();
+        if(!confirm("¿Estás seguro de borrar TODA la base de datos?")) return;
+        const { error } = await client.from('confesiones').delete().neq('id', 0);
+        if(!error) {
+            alert("Muro limpiado correctamente.");
+            location.reload();
+        } else {
+            alert("Error al limpiar. Verifica las políticas RLS.");
+        }
     }
 
-    // --- CARGA Y REALTIME ---
-    async function cargarDatos() {
-        const { data: posts } = await client.from('confesiones').select('*').order('created_at', { ascending: false }).limit(50);
-        const muro = document.getElementById('muro');
-        const misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
-
-        muro.innerHTML = posts.map(p => {
-            const yaVoto = misLikes.includes(p.id);
-            const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
-            return `
-                <div class="card">
-                    <div class="author">👤 ${escudar(p.autor)} ${esTop}</div>
-                    <div style="font-size: 1.1rem;">${escudar(p.mensaje)}</div>
-                    <div class="actions">
-                        <button class="btn-sm" onclick="darLike(${p.id})" ${yaVoto ? 'disabled' : ''}>
-                            ${yaVoto ? '✅' : '❤️'} ${p.likes || 0}
-                        </button>
-                        <button class="btn-sm" style="background:#25d366" onclick="window.open('https://wa.me/?text=${encodeURIComponent(p.mensaje)}')">WhatsApp</button>
-                    </div>
-                </div>`;
-        }).join('');
-    }
-
+    // INICIO Y REALTIME
     window.onload = () => {
         const adv = localStorage.getItem('anuncio_global');
         if(adv) mostrarBarra(adv);
         cargarDatos();
     };
 
-    client.channel('muro').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, cargarDatos).subscribe();
+    // Escuchar cambios
+    client.channel('cambios_muro').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, cargarDatos).subscribe();
+    client.channel('cambios_resp').on('postgres_changes', { event: '*', schema: 'public', table: 'respuestas' }, cargarDatos).subscribe();
 </script>
 </body>
-</html>
+    </html>
