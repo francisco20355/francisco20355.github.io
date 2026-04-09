@@ -8,35 +8,35 @@
     <style>
         :root {
             --bg: #0f172a; --card: #1e293b; --accent: #3b82f6;
-            --success: #10b981; --text: #f1f5f9; --dim: #94a3b8;
+            --success: #10b981; --text: #f1f5f9; --dim: #94a3b8; --danger: #ef4444;
         }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; padding: 10px; }
         .container { width: 100%; max-width: 500px; }
         
         header { text-align: center; padding: 20px 0; }
-        .live { font-size: 0.7rem; color: var(--success); display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 5px; text-transform: uppercase; }
+        .live { font-size: 0.7rem; color: var(--success); display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 5px; text-transform: uppercase; cursor: pointer; }
         .dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+
+        .admin-banner { display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 10px; border-radius: 12px; margin-bottom: 15px; text-align: center; font-size: 0.8rem; color: var(--danger); font-weight: bold; }
 
         .post-box { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 25px; border: 1px solid #334155; }
         textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 80px; font-family: inherit; }
         .btn-post { background: var(--accent); color: white; border: none; padding: 10px 22px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; }
 
-        #modalVerifica { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.98); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.98); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
         .modal-card { background: var(--card); padding: 30px; border-radius: 28px; width: 85%; max-width: 360px; text-align: center; border: 1px solid #334155; }
-        .modal-card input { width: 100%; padding: 14px; margin: 20px 0; border-radius: 12px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
+        .modal-card input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
 
         .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #334155; animation: slideUp 0.4s ease forwards; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .author { font-size: 0.8rem; font-weight: bold; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .author { font-size: 0.8rem; font-weight: bold; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
         .badge { background: #ec4899; color: white; font-size: 10px; padding: 2px 8px; border-radius: 6px; }
         
         .actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 12px; border-top: 1px solid #334155; }
         .btn-sm { background: #334155; border: none; color: white; padding: 7px 15px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
-        .btn-sm:active { transform: scale(0.9); }
-        
-        /* Estado deshabilitado para el botón de Like */
         .btn-sm:disabled { opacity: 0.6; cursor: not-allowed; border: 1px solid var(--success); color: var(--success); }
+        .btn-del { background: var(--danger); font-weight: bold; }
         
         .replies { margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; }
         .reply-txt { color: var(--dim); font-size: 0.85rem; margin-bottom: 5px; }
@@ -47,9 +47,11 @@
 
 <div class="container">
     <header>
-        <div class="live"><div class="dot"></div> Sistema Protegido con RLS</div>
+        <div class="live" onclick="abrirLogin()"><div class="dot"></div> Sistema Protegido con RLS</div>
         <h1>🤫 Confesionario Para todos</h1>
-        <p style="color: var(--dim); font-size: 0.8rem;">Seguro, anónimo y blindado.</p>
+        <div id="adminBanner" class="admin-banner">
+            MODO ADMINISTRADOR ACTIVO <button onclick="logout()" style="background:none; border:none; color:white; text-decoration:underline; cursor:pointer; margin-left:10px;">Cerrar Sesión</button>
+        </div>
     </header>
 
     <div class="post-box">
@@ -60,25 +62,34 @@
     <div id="muro"></div>
 </div>
 
-<div id="modalVerifica">
+<!-- Modal Verificación Usuario -->
+<div id="modalVerifica" class="modal">
     <div class="modal-card">
         <div style="font-size: 2rem;">🛡️</div>
         <h3>Verificación Anti-Fraude</h3>
-        <p style="font-size: 0.8rem; color: var(--dim);">Tu nombre e IP solo los verá el sistema para evitar spam.<br><b>En el muro aparecerás como un animal anónimo.</b></p>
         <input type="text" id="nombreReal" placeholder="Tu nombre completo">
         <button class="btn-post" style="float:none; width:100%; padding: 15px;" onclick="enviarFinal()">Confirmar</button>
     </div>
 </div>
 
+<!-- Modal Login Admin -->
+<div id="modalLogin" class="modal">
+    <div class="modal-card">
+        <h3>Acceso Administrativo</h3>
+        <input type="email" id="emailAdmin" placeholder="Correo de Admin">
+        <input type="password" id="passAdmin" placeholder="Contraseña">
+        <button class="btn-post" style="float:none; width:100%; padding: 15px;" onclick="login()">Entrar</button>
+        <button onclick="cerrarModales()" style="background:none; border:none; color:var(--dim); margin-top:15px; cursor:pointer;">Cancelar</button>
+    </div>
+</div>
+
 <script>
-    // Configuración de Supabase
     const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const animales = ["Lobo", "Zorro", "Panda", "Tigre", "León", "Águila", "Leopardo", "Búho"];
 
-    // FUNCIÓN DE SEGURIDAD CONTRA XSS
     function escudar(texto) {
         const p = document.createElement('p');
         p.textContent = texto;
@@ -90,6 +101,36 @@
         document.getElementById('modalVerifica').style.display = 'flex';
     }
 
+    function abrirLogin() {
+        document.getElementById('modalLogin').style.display = 'flex';
+    }
+
+    function cerrarModales() {
+        document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    }
+
+    // --- LÓGICA DE ADMINISTRACIÓN ---
+    async function login() {
+        const email = document.getElementById('emailAdmin').value;
+        const password = document.getElementById('passAdmin').value;
+        const { error } = await client.auth.signInWithPassword({ email, password });
+        if (error) alert("Acceso Denegado");
+        else { cerrarModales(); cargarDatos(); }
+    }
+
+    async function logout() {
+        await client.auth.signOut();
+        location.reload();
+    }
+
+    async function eliminarPost(id) {
+        if(!confirm("¿Eliminar esta confesión permanentemente?")) return;
+        const { error } = await client.from('confesiones').delete().eq('id', id);
+        if (error) alert("No tienes permisos para borrar.");
+        else cargarDatos();
+    }
+
+    // --- LÓGICA DE PUBLICACIÓN ---
     async function enviarFinal() {
         const msg = document.getElementById('mainIn').value;
         const real = document.getElementById('nombreReal').value;
@@ -107,39 +148,23 @@
         const anon = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
 
         const { error } = await client.from('confesiones').insert([{ 
-            mensaje: msg, 
-            autor: anon, 
-            nombre_real: real, 
-            direccion_ip: ip,
-            dispositivo: disp,
-            likes: 0 
+            mensaje: msg, autor: anon, nombre_real: real, direccion_ip: ip, dispositivo: disp, likes: 0 
         }]);
 
         if(!error) {
             document.getElementById('mainIn').value = '';
             document.getElementById('nombreReal').value = '';
-            document.getElementById('modalVerifica').style.display = 'none';
+            cerrarModales();
             cargarDatos();
-        } else {
-            alert("Error al enviar: " + error.message);
         }
     }
 
-    // FUNCIÓN DE LIKES CON BLOQUEO LOCAL
     async function darLike(id) {
-        // Revisamos si ya existe el like en el almacenamiento local
         let misLikes = JSON.parse(localStorage.getItem('mis_likes_app') || '[]');
-        
-        if(misLikes.includes(id)) {
-            return; // Ya le dio like, no hacemos nada
-        }
+        if(misLikes.includes(id)) return;
 
         const { error } = await client.rpc('incrementar_like', { confesion_id: id });
-        
-        if(error) {
-            console.error("Error en RLS/RPC:", error.message);
-        } else {
-            // Guardamos el ID en el almacenamiento local para que no pueda repetir
+        if(!error) {
             misLikes.push(id);
             localStorage.setItem('mis_likes_app', JSON.stringify(misLikes));
             cargarDatos();
@@ -155,37 +180,37 @@
     }
 
     async function cargarDatos() {
-        // Obtenemos datos públicos ordenados
-        const { data: posts } = await client.from('confesiones')
-            .select('id, mensaje, autor, likes')
-            .order('created_at', { ascending: false });
-            
-        const { data: resps } = await client.from('respuestas')
-            .select('mensaje, confesion_id')
-            .order('created_at', { ascending: true });
+        const { data: { user } } = await client.auth.getUser();
+        if(user) document.getElementById('adminBanner').style.display = 'block';
+
+        const { data: posts } = await client.from('confesiones').select('*').order('created_at', { ascending: false });
+        const { data: resps } = await client.from('respuestas').select('*').order('created_at', { ascending: true });
         
         const muro = document.getElementById('muro');
-        if (!posts) return;
-
-        // Recuperamos los likes que el usuario ya dio
         const misLikes = JSON.parse(localStorage.getItem('mis_likes_app') || '[]');
 
-        muro.innerHTML = posts.map(p => {
+        muro.innerHTML = posts ? posts.map(p => {
             const mis_resps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
             const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
-            
-            // Verificamos si este post específico ya tiene like del usuario
             const yaVoto = misLikes.includes(p.id);
             
+            // Botón de borrar solo si hay sesión
+            const btnBorrar = user ? `<button class="btn-sm btn-del" onclick="eliminarPost(${p.id})">Borrar</button>` : '';
+            // Nombre real solo visible para admin
+            const nombreAdmin = user ? `<span style="color:yellow; font-size:10px;">[${p.nombre_real}]</span>` : '';
+
             return `
                 <div class="card">
-                    <div class="author">👤 ${escudar(p.autor || 'Anónimo')} ${esTop}</div>
+                    <div class="author">
+                        <span>👤 ${escudar(p.autor)} ${esTop} ${nombreAdmin}</span>
+                        ${btnBorrar}
+                    </div>
                     <div style="font-size: 1.05rem;">${escudar(p.mensaje)}</div>
                     <div class="actions">
                         <button class="btn-sm" onclick="darLike(${p.id})" ${yaVoto ? 'disabled' : ''}>
                             ${yaVoto ? '✅' : '❤️'} ${p.likes || 0}
                         </button>
-                        <button class="btn-sm" style="background:#25d366" onclick="window.open('https://wa.me/?text=${encodeURIComponent('Mira esta confesión: ' + p.mensaje)}')">WhatsApp</button>
+                        <button class="btn-sm" style="background:#25d366" onclick="window.open('https://wa.me/?text=${encodeURIComponent('Confesión: ' + p.mensaje)}')">WhatsApp</button>
                     </div>
                     <div class="replies">
                         ${mis_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
@@ -193,14 +218,11 @@
                     </div>
                 </div>
             `;
-        }).join('');
+        }).join('') : '';
     }
 
-    // Escuchar cambios en tiempo real
     client.channel('any').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, cargarDatos).subscribe();
-    
-    // Carga inicial
     cargarDatos();
 </script>
 </body>
-</html>
+    </html>
