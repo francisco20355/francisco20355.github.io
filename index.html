@@ -3,106 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Confesionario Master</title>
+    <title>Confesionario Elite v3</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { 
             --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; 
-            --text: #f1f5f9; --dim: #94a3b8; --danger: #ef4444;
+            --text: #f1f5f9; --dim: #94a3b8; --danger: #ef4444; 
         }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 60px; }
         
-        /* ANUNCIO SUPERIOR */
+        /* BARRA DE ANUNCIO */
         #globalAlert { display:none; background: #dc2626; color: white; padding: 12px; text-align: center; font-weight: bold; width: 100%; position: sticky; top: 0; z-index: 1000; }
 
         .container { width: 100%; max-width: 500px; margin: 0 auto; padding: 15px; box-sizing: border-box; }
         
-        /* CAJA DE PUBLICAR */
-        .post-box { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; margin-bottom: 25px; }
-        textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 80px; }
+        /* CAJA DE PUBLICACIÓN */
+        .post-box { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; margin-bottom: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 90px; }
         
-        .btn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        .btn-danger { background: var(--danger); }
+        .btn { background: var(--accent); color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; }
 
-        /* CARTAS DE CONFESIÓN */
-        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid #334155; }
-        .author { font-size: 0.85rem; color: var(--accent); font-weight: bold; margin-bottom: 8px; }
-        .actions { margin-top: 15px; display: flex; gap: 10px; }
-        .btn-like { background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; padding: 5px 12px; border-radius: 8px; cursor: pointer; }
+        /* TARJETAS DEL MURO */
+        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid #334155; position: relative; transition: 0.3s; }
+        .author { font-size: 0.85rem; color: var(--accent); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        
+        .actions { margin-top: 15px; display: flex; gap: 10px; align-items: center; }
+        .btn-action { background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; padding: 6px 15px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
         /* COMENTARIOS */
-        .reply-box { margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; }
-        .reply-item { font-size: 0.85rem; margin-bottom: 5px; color: var(--dim); }
-        .is-admin { color: #818cf8 !important; font-weight: bold; }
-        .reply-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #444; color: white; font-size: 0.85rem; padding: 5px 0; outline: none; }
+        .reply-section { margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 12px; }
+        .reply-item { font-size: 0.85rem; margin-bottom: 6px; color: var(--dim); padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .reply-admin { color: #818cf8 !important; font-weight: bold; }
+        .reply-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #444; color: white; font-size: 0.85rem; padding: 8px 0; outline: none; }
 
-        /* PANEL ADMIN (PÁGINA COMPLETA) */
-        #adminUI { 
-            display: none; position: fixed; inset: 0; background: var(--bg); z-index: 5000; 
-            padding: 20px; overflow-y: auto;
+        /* PANEL DE ADMINISTRADOR */
+        #adminPanel { 
+            display: none; background: #1e293b; border: 2px solid var(--accent); 
+            padding: 20px; border-radius: 20px; margin-bottom: 30px; 
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
         }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 15px; margin-bottom: 20px; }
-        .admin-card { background: var(--card); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid var(--accent); }
-        .input-admin { width: 100%; padding: 10px; margin: 10px 0; border-radius: 8px; background: #0f172a; border: 1px solid #444; color: white; box-sizing: border-box; }
+        .admin-input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 10px; background: #0f172a; border: 1px solid #444; color: white; box-sizing: border-box; }
 
-        /* MODAL */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 4000; align-items: center; justify-content: center; }
-        .modal-content { background: var(--card); padding: 25px; border-radius: 20px; width: 80%; max-width: 350px; }
+        /* MODAL IDENTIDAD */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 4000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card); padding: 25px; border-radius: 25px; width: 85%; max-width: 350px; border: 1px solid #334155; text-align: center; }
 
-        #gear { position: fixed; bottom: 20px; left: 20px; font-size: 24px; cursor: pointer; opacity: 0.3; }
+        #gear { position: fixed; bottom: 20px; left: 20px; font-size: 24px; cursor: pointer; opacity: 0.4; z-index: 3000; transition: 0.3s; }
+        #gear:hover { opacity: 1; transform: rotate(90deg); }
     </style>
 </head>
 <body>
 
 <div id="globalAlert"></div>
 
-<div class="container" id="userView">
-    <header style="text-align: center; padding: 20px;">
-        <h1 style="margin:0">🤫 Confesiones</h1>
-        <p id="stats" style="color: var(--dim); font-size: 0.8rem;">Cargando...</p>
+<div class="container">
+    <header style="text-align: center; padding: 20px 0;">
+        <h1 style="margin:0; font-size: 2.2rem;">🤫 Confesionario</h1>
+        <span id="visitStats" style="color: var(--dim); font-size: 0.8rem; background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 20px;">Conectando servidor...</span>
     </header>
 
+    <!-- PANEL DE CONTROL ADMIN -->
+    <div id="adminPanel">
+        <h2 style="margin-top:0">🛠️ Modo Maestro Activo</h2>
+        <label>Anuncio Global:</label>
+        <input type="text" id="newAnnounce" class="admin-input" placeholder="Escribe un mensaje para todos...">
+        <div style="display:flex; gap:10px;">
+            <button class="btn btn-sm" style="flex:1" onclick="updateAnnounce()">Publicar Anuncio</button>
+            <button class="btn btn-sm" style="flex:1; background:#475569" onclick="clearAnnounce()">Quitar Anuncio</button>
+        </div>
+        <button class="btn btn-sm" style="width:100%; background:var(--danger); margin-top:10px;" onclick="location.reload()">Cerrar Sesión Admin</button>
+    </div>
+
+    <!-- CAJA PARA ESCRIBIR -->
     <div class="post-box">
-        <textarea id="msgIn" placeholder="Escribe tu secreto más profundo..."></textarea>
+        <textarea id="mainInput" placeholder="¿Tienes algo que confesar? No diremos quién eres..."></textarea>
         <div style="text-align: right;"><button class="btn" onclick="openModal()">Publicar</button></div>
     </div>
 
-    <div id="muro">Buscando confesiones...</div>
+    <!-- MURO DE MENSAJES -->
+    <div id="muro">Cargando pensamientos...</div>
 </div>
 
-<!-- PANEL DE ADMINISTRACIÓN COMPLETO -->
-<div id="adminUI">
-    <div class="admin-header">
-        <h2 style="margin:0">🛠️ Panel de Control</h2>
-        <button class="btn btn-danger" onclick="closeAdmin()">Salir</button>
-    </div>
-
-    <div class="admin-card">
-        <h3>📢 Gestionar Anuncio</h3>
-        <input type="text" id="announceIn" class="input-admin" placeholder="Escribe el mensaje global...">
-        <div style="display:flex; gap:10px;">
-            <button class="btn" style="flex:1" onclick="setAnnounce()">Publicar Anuncio</button>
-            <button class="btn" style="flex:1; background:#475569" onclick="clearAnnounce()">Quitar</button>
-        </div>
-    </div>
-
-    <div class="admin-card" style="border-color: #22c55e;">
-        <h3>📊 Estadísticas Reales</h3>
-        <p id="adminVisits">Visitas: 0</p>
-        <p style="font-size: 0.8rem; color: var(--dim)">Nota: En el muro de abajo ahora puedes borrar mensajes.</p>
-    </div>
-
-    <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;">
-    <div id="muroAdmin"></div>
-</div>
-
-<!-- MODAL NOMBRE REAL -->
+<!-- MODAL PARA NOMBRE REAL -->
 <div id="modalId" class="modal">
     <div class="modal-content">
-        <h3>Un paso más...</h3>
-        <p style="font-size: 0.8rem; color: var(--dim);">Tu nombre real no se mostrará, pero es necesario para moderación.</p>
-        <input type="text" id="realName" class="input-admin" placeholder="Tu nombre completo">
-        <button class="btn" style="width:100%" onclick="publicar()">Confirmar Envío</button>
+        <h3 style="margin:0">Casi listo...</h3>
+        <p style="font-size:0.85rem; color:var(--dim)">Tu nombre real NO se mostrará en el muro, es solo para moderación del administrador.</p>
+        <input type="text" id="realName" class="admin-input" placeholder="Escribe tu nombre real">
+        <button class="btn" style="width:100%" onclick="sendConfession()">Enviar Confesión</button>
     </div>
 </div>
 
@@ -113,145 +103,153 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let isAdmin = false;
+    let isAdminMode = false;
 
-    // --- CARGAR DATOS ---
-    async function loadApp() {
-        // 1. Configuración y Visitas
+    // --- CARGAR TODO ---
+    async function loadAll() {
+        // 1. Configuración (Anuncio y Visitas)
         const { data: config } = await client.from('config').select('*');
         if (config) {
             const an = config.find(c => c.clave === 'anuncio')?.valor;
             const vi = config.find(c => c.clave === 'visitas')?.valor;
-            if (an) {
+            if (an && an.trim() !== "") {
                 document.getElementById('globalAlert').innerText = "📢 " + an;
                 document.getElementById('globalAlert').style.display = 'block';
-                document.getElementById('announceIn').value = an;
             } else {
                 document.getElementById('globalAlert').style.display = 'none';
             }
-            document.getElementById('stats').innerText = `${vi || 0} visitas`;
-            document.getElementById('adminVisits').innerText = `Visitas totales: ${vi || 0}`;
+            document.getElementById('visitStats').innerText = `${vi || 0} visitas hoy`;
         }
 
-        // 2. Confesiones y Respuestas
-        const { data: posts } = await client.from('confesiones').select('*').order('id', { ascending: false });
-        const { data: resps } = await client.from('respuestas').select('*').order('id', { ascending: true });
-
-        renderMuro(posts, resps);
-    }
-
-    function renderMuro(posts, resps) {
-        const muro = document.getElementById('muro');
-        const muroAdmin = document.getElementById('muroAdmin');
+        // 2. Confesiones (Filtradas para evitar bloqueos)
+        // Si no eres admin, solo pedimos campos públicos
+        const query = isAdminMode ? '*' : 'id, mensaje, autor, likes';
+        const { data: posts, error } = await client.from('confesiones').select(query).order('id', { ascending: false });
         
-        if (!posts || posts.length === 0) {
-            muro.innerHTML = "No hay confesiones todavía.";
+        if (error) {
+            document.getElementById('muro').innerHTML = "<p style='color:red; text-align:center;'>Error de seguridad: Ejecuta DISABLE RLS en Supabase.</p>";
             return;
         }
 
-        const html = posts.map(p => {
-            const rFiltradas = resps ? resps.filter(r => r.confesion_id === p.id) : [];
+        // 3. Respuestas
+        const { data: resps } = await client.from('respuestas').select('*').order('created_at', { ascending: true });
+
+        const muro = document.getElementById('muro');
+        if (!posts || posts.length === 0) {
+            muro.innerHTML = "<p style='text-align:center; color:var(--dim)'>El muro está vacío. Sé el primero.</p>";
+            return;
+        }
+
+        muro.innerHTML = posts.map(p => {
+            const misResps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
             return `
                 <div class="card">
-                    <div class="author">👤 ${p.autor || 'Anónimo'}</div>
-                    <div style="font-size:1.1rem; color:white;">${p.mensaje}</div>
+                    <div class="author">👤 ${p.autor || 'Anónimo'} ${isAdminMode ? `<span style="color:var(--dim); font-weight:normal;">[De: ${p.nombre_real}]</span>` : ''}</div>
+                    <div style="font-size:1.1rem; line-height:1.5;">${p.mensaje}</div>
                     
                     <div class="actions">
-                        <button class="btn-like" onclick="darLike(${p.id})">❤️ ${p.likes || 0}</button>
-                        ${isAdmin ? `<button class="btn-like" style="color:var(--danger)" onclick="borrar(${p.id})">🗑️ Eliminar</button>` : ''}
-                        ${isAdmin ? `<span style="font-size:10px; color:gray">Real: ${p.nombre_real}</span>` : ''}
+                        <button class="btn-action" onclick="likePost(${p.id})">❤️ <span>${p.likes || 0}</span></button>
+                        ${isAdminMode ? `<button class="btn-action" style="color:var(--danger); border-color:var(--danger);" onclick="deletePost(${p.id})">Eliminar</button>` : ''}
                     </div>
 
-                    <div class="reply-box">
-                        ${rFiltradas.map(r => `<div class="reply-item ${r.es_admin ? 'is-admin' : ''}">${r.es_admin ? '🛡️' : '↳'} ${r.mensaje}</div>`).join('')}
-                        <input type="text" class="reply-input" placeholder="Comentar..." onkeypress="responder(${p.id}, event)">
+                    <div class="reply-section">
+                        ${misResps.map(r => `
+                            <div class="reply-item ${r.es_admin ? 'reply-admin' : ''}">
+                                ${r.es_admin ? '🛡️ Admin: ' : '↳ '} ${r.mensaje}
+                            </div>
+                        `).join('')}
+                        <input type="text" class="reply-input" placeholder="Comentar algo..." onkeypress="sendReply(${p.id}, event)">
                     </div>
                 </div>
             `;
         }).join('');
-
-        muro.innerHTML = html;
-        muroAdmin.innerHTML = `<h3>Vista de Moderación</h3>` + html;
     }
 
-    // --- ACCIONES ---
+    // --- ACCIONES DE USUARIO ---
     function openModal() {
-        if (document.getElementById('msgIn').value.trim()) {
+        if (document.getElementById('mainInput').value.trim()) {
             document.getElementById('modalId').style.display = 'flex';
         }
     }
 
-    async function publicar() {
-        const msg = document.getElementById('msgIn').value;
+    async function sendConfession() {
+        const msg = document.getElementById('mainInput').value;
         const real = document.getElementById('realName').value;
-        if (!real.trim()) return alert("Nombre real requerido");
+        if (!real.trim()) return alert("Por favor escribe tu nombre.");
 
-        await client.from('confesiones').insert([{ mensaje: msg, autor: "Anónimo", nombre_real: real, likes: 0 }]);
-        document.getElementById('msgIn').value = "";
+        await client.from('confesiones').insert([{ 
+            mensaje: msg, 
+            autor: "Anónimo", 
+            nombre_real: real, 
+            likes: 0 
+        }]);
+
+        document.getElementById('mainInput').value = "";
+        document.getElementById('realName').value = "";
         document.getElementById('modalId').style.display = 'none';
-        loadApp();
+        loadAll();
     }
 
-    async function darLike(id) {
+    async function likePost(id) {
         await client.rpc('incrementar_like', { confesion_id: id });
-        loadApp();
+        loadAll();
     }
 
-    async function responder(id, e) {
+    async function sendReply(postId, e) {
         if (e.key === 'Enter' && e.target.value.trim()) {
-            await client.from('respuestas').insert([{ confesion_id: id, mensaje: e.target.value, es_admin: isAdmin }]);
+            await client.from('respuestas').insert([{ 
+                confesion_id: postId, 
+                mensaje: e.target.value, 
+                es_admin: isAdminMode 
+            }]);
             e.target.value = "";
-            loadApp();
+            loadAll();
         }
     }
 
-    // --- FUNCIONES ADMIN ---
+    // --- ACCIONES DE ADMINISTRADOR ---
     async function loginAdmin() {
-        const p = prompt("Contraseña:");
+        const pass = prompt("Clave Maestra:");
+        if (!pass) return;
+
         const { data } = await client.from('config_secreta').select('clave_admin').single();
-        if (data && data.clave_admin === p) {
-            isAdmin = true;
-            document.getElementById('adminUI').style.display = 'block';
-            loadApp();
+        if (data && data.clave_admin === pass) {
+            isAdminMode = true;
+            document.getElementById('adminPanel').style.display = 'block';
+            loadAll();
+            alert("Acceso Autorizado");
         } else {
-            alert("Incorrecto");
+            alert("Clave Incorrecta");
         }
     }
 
-    function closeAdmin() {
-        isAdmin = false;
-        document.getElementById('adminUI').style.display = 'none';
-        loadApp();
-    }
-
-    async function setAnnounce() {
-        const val = document.getElementById('announceIn').value;
+    async function updateAnnounce() {
+        const val = document.getElementById('newAnnounce').value;
         await client.from('config').update({ valor: val }).eq('clave', 'anuncio');
-        alert("Anuncio actualizado");
-        loadApp();
+        loadAll();
     }
 
     async function clearAnnounce() {
         await client.from('config').update({ valor: "" }).eq('clave', 'anuncio');
-        document.getElementById('announceIn').value = "";
-        loadApp();
+        loadAll();
     }
 
-    async function borrar(id) {
-        if (confirm("¿Borrar mensaje?")) {
+    async function deletePost(id) {
+        if (confirm("¿Estás seguro de eliminar esta confesión?")) {
             await client.from('confesiones').delete().eq('id', id);
-            loadApp();
+            loadAll();
         }
     }
 
     // --- INICIO ---
     window.onload = () => {
-        client.rpc('incrementar_visitas_config').catch(()=>{});
-        loadApp();
+        client.rpc('incrementar_visitas_config').catch(() => {});
+        loadAll();
     };
 
-    // Realtime
-    client.channel('cambios').on('postgres_changes', { event: '*', schema: 'public' }, loadApp).subscribe();
+    // Escuchar cambios de otros usuarios en vivo
+    client.channel('any').on('postgres_changes', { event: '*', schema: 'public' }, loadAll).subscribe();
+
 </script>
 </body>
 </html>
