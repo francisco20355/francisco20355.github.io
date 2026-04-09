@@ -3,127 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Confesionario Pro | Panel de Control</title>
+    <title>Confesionario Master | Live</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg: #0f172a; --card: #1e293b; --accent: #3b82f6;
-            --success: #10b981; --text: #f1f5f9; --dim: #94a3b8; --danger: #ef4444; --warning: #f59e0b;
-            --admin-msg: #4f46e5;
+            --success: #10b981; --text: #f1f5f9; --dim: #94a3b8; --danger: #ef4444; --admin-msg: #4f46e5;
         }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        /* BARRA ROJA GLOBAL */
-        #globalAlert { display:none; background: #dc2626; color: white; padding: 14px; text-align: center; font-weight: bold; width: 100%; position: sticky; top: 0; z-index: 1000; border-bottom: 3px solid #7f1d1d; }
+        /* BARRA DE ANUNCIO ROJA */
+        #globalAlert { display:none; background: #dc2626; color: white; padding: 14px; text-align: center; font-weight: bold; width: 100%; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid #7f1d1d; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 
-        .container { width: 100%; max-width: 500px; padding: 10px; box-sizing: border-box; }
-        header { text-align: center; padding: 25px 0; }
+        .container { width: 100%; max-width: 500px; padding: 15px; box-sizing: border-box; }
+        header { text-align: center; padding: 20px 0; }
         
         /* CONTADOR */
-        .stats { font-size: 0.75rem; color: var(--dim); background: rgba(255,255,255,0.05); padding: 6px 15px; border-radius: 20px; display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; }
+        .stats { font-size: 0.75rem; color: var(--dim); background: rgba(255,255,255,0.05); padding: 6px 15px; border-radius: 20px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.1); }
         .dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); } 70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+        @keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
 
-        .post-box { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 25px; border: 1px solid #334155; }
-        textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 90px; font-family: inherit; }
+        .post-box { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 25px; border: 1px solid #334155; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 100px; font-family: inherit; }
         .btn-post { background: var(--accent); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; transition: 0.2s; }
         .btn-post:active { transform: scale(0.95); }
 
-        /* CONFESIONES */
-        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 15px; border: 1px solid #334155; position: relative; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* CARDS DE CONFESIONES */
+        .card { background: var(--card); border-radius: 20px; padding: 20px; margin-bottom: 18px; border: 1px solid #334155; position: relative; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         
-        .author { font-size: 0.8rem; font-weight: bold; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
-        .badge { font-size: 10px; padding: 2px 8px; border-radius: 6px; color: white; font-weight: bold; text-transform: uppercase; }
-        .bg-custom { background: #8b5cf6; }
-        .bg-top { background: #ec4899; }
+        .author { font-size: 0.85rem; font-weight: bold; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .badge { font-size: 10px; padding: 2px 8px; border-radius: 6px; color: white; font-weight: bold; text-transform: uppercase; background: #8b5cf6; }
 
-        .actions { margin-top: 15px; display: flex; gap: 10px; }
-        .btn-action { background: rgba(255,255,255,0.05); border: 1px solid #334155; color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+        .btn-like { background: rgba(255,255,255,0.05); border: 1px solid #444; color: white; padding: 8px 16px; border-radius: 12px; margin-top: 15px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .btn-like:hover { background: rgba(255,255,255,0.1); }
 
-        /* PANEL ADMIN DENTRO DE CARD */
-        .admin-zone { display: none; margin-top: 15px; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 12px; border: 1px dashed var(--accent); flex-wrap: wrap; gap: 8px; }
-        .btn-adm { font-size: 10px; padding: 6px 10px; border-radius: 6px; border: none; cursor: pointer; color: white; font-weight: bold; }
+        /* PANEL ADMIN INTERNO */
+        .admin-controls { display: none; margin-top: 15px; padding: 12px; background: rgba(59, 130, 246, 0.1); border-radius: 12px; border: 1px dashed var(--accent); gap: 8px; flex-wrap: wrap; }
+        .btn-adm { font-size: 11px; padding: 6px 12px; border: none; border-radius: 6px; color: white; cursor: pointer; font-weight: bold; }
 
         /* COMENTARIOS */
-        .replies { margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 15px; }
-        .reply-item { font-size: 0.85rem; margin-bottom: 8px; padding: 8px; border-radius: 8px; color: var(--dim); position: relative; }
-        .reply-admin { background: var(--admin-msg); color: white !important; font-weight: 500; border-left: 4px solid white; }
-        .reply-in { width: 100%; background: transparent; border: none; color: white; border-bottom: 1px solid #475569; outline: none; font-size: 0.85rem; margin-top: 10px; }
+        .replies { margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 12px; }
+        .reply-item { font-size: 0.85rem; margin-bottom: 8px; padding: 8px; border-radius: 8px; color: var(--dim); line-height: 1.4; }
+        .reply-admin { background: var(--admin-msg); color: white !important; font-weight: bold; border-left: 4px solid white; }
+        .reply-in { width: 100%; background: transparent; border: none; color: white; border-bottom: 1px solid #475569; outline: none; font-size: 0.85rem; margin-top: 10px; padding: 5px 0; }
 
-        /* MODALES */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.98); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .modal-card { background: var(--card); padding: 30px; border-radius: 25px; width: 85%; max-width: 400px; border: 1px solid #334155; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
-        .modal-card input { width: 100%; padding: 15px; margin: 12px 0; border-radius: 12px; background: #0f172a; color: white; border: 1px solid #475569; box-sizing: border-box; }
+        /* GEAR FLOTANTE */
+        #adminGear { position:fixed; bottom:25px; left:25px; width:50px; height:50px; background: #1e293b; border: 2px solid var(--accent); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; cursor:pointer; z-index: 3000; box-shadow: 0 5px 15px rgba(0,0,0,0.4); font-size: 24px; transition: 0.3s; }
+        #adminGear:hover { transform: rotate(45deg); }
 
-        /* BOTON FLOTANTE GEAR */
-        #adminGear { position:fixed; bottom:25px; left:25px; width:50px; height:50px; background: #1e293b; border: 2px solid var(--accent); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; cursor:pointer; z-index: 3000; box-shadow: 0 10px 20px rgba(0,0,0,0.4); font-size: 24px; transition: 0.3s; }
-        #adminGear:hover { transform: rotate(90deg) scale(1.1); }
+        /* MODAL VERIFICACION */
+        #modalVerifica { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 5000; backdrop-filter: blur(5px); }
+        .modal-content { background: var(--card); padding: 30px; border-radius: 25px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 85%; max-width: 380px; border: 1px solid #334155; text-align: center; }
+        .modal-content input { width: 100%; padding: 15px; margin: 15px 0; border-radius: 12px; background: #0f172a; color: white; border: 1px solid #475569; box-sizing: border-box; font-size: 16px; }
     </style>
 </head>
 <body>
 
-<!-- BARRA DE ANUNCIO -->
 <div id="globalAlert">
-    <span id="alertText">📢 Cargando...</span>
+    <span id="alertText">📢 Cargando anuncio...</span>
 </div>
 
 <div class="container">
     <header>
-        <h1 style="margin:0; font-size: 2.5rem;">🤫 Confesionario</h1>
+        <h1 style="margin:0; font-size: 2.2rem;">🤫 Confesionario</h1>
         <div class="stats">
             <div class="dot"></div> <span id="visitCount">0</span> visitas totales
         </div>
     </header>
 
     <div class="post-box">
-        <textarea id="mainIn" placeholder="¿Qué quieres confesar hoy? Nadie sabrá quién eres..."></textarea>
-        <div style="overflow:auto"><button class="btn-post" onclick="abrirModal()">Publicar</button></div>
+        <textarea id="mainIn" placeholder="¿Qué tienes para confesar hoy? Nadie sabrá quién eres..."></textarea>
+        <div style="overflow: auto; width: 100%;">
+            <button class="btn-post" onclick="abrirModal()">Publicar</button>
+        </div>
     </div>
 
     <div id="muro"></div>
 </div>
 
-<!-- MODAL IDENTIDAD -->
-<div id="modalVerifica" class="modal-overlay">
-    <div class="modal-card">
-        <h3 style="margin-top:0">🛡️ Verificación Requerida</h3>
-        <p style="font-size:0.85rem; color:var(--dim)">Tu nombre real es privado, solo lo ve el administrador para evitar spam.</p>
+<!-- Modal Nombre Real -->
+<div id="modalVerifica">
+    <div class="modal-content">
+        <h3 style="margin-top:0">🛡️ Filtro de Seguridad</h3>
+        <p style="font-size: 0.85rem; color: var(--dim);">Tu nombre real solo lo verá el administrador para evitar spam.</p>
         <input type="text" id="nombreReal" placeholder="Nombre completo">
-        <button class="btn-post" style="width:100%; float:none; padding:18px" onclick="enviarFinal()">Confirmar y Publicar</button>
-    </div>
-</div>
-
-<!-- MODAL PANEL ADMIN -->
-<div id="modalAdmin" class="modal-overlay">
-    <div class="modal-card" style="max-width:450px">
-        <h3 style="color:var(--accent)">🛡️ Panel Maestro de Admin</h3>
-        <p style="font-size:0.8rem; color:var(--dim)">Control de anuncios y mantenimiento global</p>
-        
-        <input type="text" id="inputAnuncio" placeholder="Mensaje para la barra roja...">
-        <button class="btn-post" style="width:100%; float:none; background:var(--danger); margin-bottom:10px" onclick="setAnuncio()">Actualizar Anuncio 📢</button>
-        <button class="btn-post" style="width:100%; float:none; background:var(--warning); margin-bottom:10px" onclick="borrarTodo()">BORRAR TODO EL MURO 💀</button>
-        <button class="btn-post" style="width:100%; float:none; background:var(--accent)" onclick="cerrarAdmin()">Cerrar Panel</button>
+        <button class="btn-post" style="width:100%; float:none; padding: 15px;" onclick="enviarFinal()">Confirmar y Publicar</button>
     </div>
 </div>
 
 <div id="adminGear" onclick="loginAdmin()">⚙️</div>
 
 <script>
+    // CONFIGURACIÓN SUPABASE
     const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let isAdmin = false;
 
-    // --- CARGA DE DATOS ---
-    async function refresh() {
-        // 1. Configuración (Anuncio y Visitas)
-        const { data: config } = await client.from('config').select('*');
-        if(config) {
-            const an = config.find(c => c.clave === 'anuncio')?.valor;
-            const vi = config.find(c => c.clave === 'visitas')?.valor;
-            if(an && an.trim() !== "") {
+    // --- CARGAR TODO ---
+    async function cargarMuro() {
+        console.log("Actualizando muro...");
+
+        // 1. Config (Anuncio y Visitas)
+        const { data: configs } = await client.from('config').select('*');
+        if (configs) {
+            const an = configs.find(c => c.clave === 'anuncio')?.valor;
+            const vi = configs.find(c => c.clave === 'visitas')?.valor;
+            if (an && an.trim() !== "") {
                 document.getElementById('alertText').innerText = "📢 " + an;
                 document.getElementById('globalAlert').style.display = 'block';
             } else {
@@ -132,50 +120,48 @@
             document.getElementById('visitCount').innerText = vi || 0;
         }
 
-        // 2. Confesiones (SELECT ESPECÍFICO)
-        const { data: posts } = await client.from('confesiones')
-            .select('id, mensaje, autor, likes, created_at, etiqueta_admin')
-            .order('created_at', { ascending: false });
+        // 2. Confesiones (Select específico para no fallar por RLS)
+        const { data: posts, error: postErr } = await client.from('confesiones')
+            .select('id, mensaje, autor, likes, etiqueta_admin, created_at')
+            .order('id', { ascending: false });
+
+        if (postErr) {
+            console.error("Error al leer:", postErr);
+            return;
+        }
 
         // 3. Respuestas
         const { data: resps } = await client.from('respuestas').select('*').order('created_at', { ascending: true });
         
         const muro = document.getElementById('muro');
-        const misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
-
-        if(!posts || posts.length === 0) {
-            muro.innerHTML = "<p style='text-align:center; color:gray; margin-top:30px'>No hay mensajes aún.</p>";
+        if (!posts || posts.length === 0) {
+            muro.innerHTML = "<p style='text-align:center; color:gray; margin-top:20px'>Aún no hay confesiones. ¡Sé el primero!</p>";
             return;
         }
 
         muro.innerHTML = posts.map(p => {
-            const filtradas = resps ? resps.filter(r => r.confesion_id === p.id) : [];
-            const liked = misLikes.includes(p.id);
-            let badge = p.etiqueta_admin ? `<span class="badge bg-custom">💎 ${p.etiqueta_admin}</span>` : (p.likes >= 5 ? `<span class="badge bg-top">🔥 TOP</span>` : '');
+            const rFiltradas = resps ? resps.filter(r => r.confesion_id === p.id) : [];
+            const badge = p.etiqueta_admin ? `<span class="badge">${p.etiqueta_admin}</span>` : "";
 
             return `
                 <div class="card">
                     <div class="author">👤 ${p.autor} ${badge}</div>
-                    <div style="font-size: 1.15rem; color: white;">${p.mensaje}</div>
+                    <div style="color:white; font-size:1.1rem; line-height:1.4;">${p.mensaje}</div>
                     
-                    <div class="actions">
-                        <button class="btn-action" onclick="darLike(${p.id})" ${liked ? 'disabled' : ''} style="color:${liked ? '#10b981':'white'}">
-                            ${liked ? '✅' : '❤️'} ${p.likes || 0}
-                        </button>
-                    </div>
+                    <button class="btn-like" onclick="darLike(${p.id})">❤️ ${p.likes || 0}</button>
 
-                    <div class="admin-zone" style="display:${isAdmin ? 'flex' : 'none'}">
-                        <button class="btn-adm" style="background:var(--accent)" onclick="tagPost(${p.id})">🏷️ Etiquetar</button>
-                        <button class="btn-adm" style="background:var(--danger)" onclick="delPost(${p.id})">🗑️ Borrar</button>
+                    <div class="admin-controls" style="display:${isAdmin ? 'flex' : 'none'}">
+                        <button class="btn-adm" style="background:var(--accent)" onclick="tagPost(${p.id})">Etiquetar</button>
+                        <button class="btn-adm" style="background:var(--danger)" onclick="delPost(${p.id})">Borrar</button>
                     </div>
 
                     <div class="replies">
-                        ${filtradas.map(r => `
+                        ${rFiltradas.map(r => `
                             <div class="reply-item ${r.es_admin ? 'reply-admin' : ''}">
                                 ${r.es_admin ? '🛡️ ' : '↳ '} ${r.mensaje}
-                                ${isAdmin ? `<span onclick="delResp(${r.id})" style="color:red; cursor:pointer; margin-left:10px; font-weight:bold">×</span>` : ''}
+                                ${isAdmin ? `<span onclick="delResp(${r.id})" style="color:red; cursor:pointer; margin-left:10px;">×</span>` : ''}
                             </div>`).join('')}
-                        <input type="text" class="reply-in" placeholder="${isAdmin ? 'Responder como ADMIN...' : 'Escribe un comentario...'}" onkeypress="responder(${p.id}, event)">
+                        <input type="text" class="reply-in" placeholder="Escribe un comentario..." onkeypress="responder(${p.id}, event)">
                     </div>
                 </div>`;
         }).join('');
@@ -183,76 +169,94 @@
 
     // --- FUNCIONES ADMIN ---
     async function loginAdmin() {
-        const pw = prompt("Clave Maestra:");
+        const pw = prompt("Introduce la clave maestra:");
         if(!pw) return;
-        const { data: ok } = await client.rpc('verificar_admin', { pass_ingresada: pw });
-        if(ok) {
+
+        // Buscamos en tu tabla config_secreta
+        const { data, error } = await client.from('config_secreta').select('valor').eq('clave', 'admin_pass').single();
+        
+        if (data && data.valor === pw) {
             isAdmin = true;
-            document.getElementById('modalAdmin').style.display = 'flex';
-            refresh();
-        } else alert("Error de acceso");
-    }
-
-    function cerrarAdmin() { document.getElementById('modalAdmin').style.display = 'none'; }
-
-    async function setAnuncio() {
-        const txt = document.getElementById('inputAnuncio').value;
-        await client.from('config').update({ valor: txt }).eq('clave', 'anuncio');
-        alert("Anuncio actualizado");
-        refresh();
+            alert("Acceso concedido 🛡️");
+            const op = prompt("1: Panel / 2: Cambiar Anuncio / 3: Borrar Todo");
+            if (op === "2") {
+                const msg = prompt("Nuevo mensaje (vacío para quitar):");
+                await client.from('config').update({ valor: msg }).eq('clave', 'anuncio');
+            } else if (op === "3") {
+                if(confirm("¿Borrar todo el muro?")) await client.from('confesiones').delete().neq('id', 0);
+            }
+            cargarMuro();
+        } else {
+            alert("Clave incorrecta.");
+        }
     }
 
     async function tagPost(id) {
-        const t = prompt("Nueva etiqueta:");
-        if(t !== null) { await client.from('confesiones').update({ etiqueta_admin: t }).eq('id', id); refresh(); }
+        const t = prompt("Texto de la etiqueta:");
+        if(t !== null) await client.from('confesiones').update({ etiqueta_admin: t }).eq('id', id);
+        cargarMuro();
     }
 
-    async function delPost(id) { if(confirm("¿Eliminar?")) { await client.from('confesiones').delete().eq('id', id); refresh(); } }
-    async function delResp(id) { await client.from('respuestas').delete().eq('id', id); refresh(); }
-    async function borrarTodo() { if(confirm("¿BORRAR TODO?")) { await client.from('confesiones').delete().neq('id', 0); refresh(); } }
+    async function delPost(id) { if(confirm("¿Eliminar post?")) { await client.from('confesiones').delete().eq('id', id); cargarMuro(); } }
+    async function delResp(id) { await client.from('respuestas').delete().eq('id', id); cargarMuro(); }
 
-    // --- LOGICA DE USUARIO ---
-    function abrirModal() { if(document.getElementById('mainIn').value.trim()) document.getElementById('modalVerifica').style.display = 'flex'; }
-    
+    // --- FUNCIONES USUARIO ---
+    function abrirModal() {
+        if(document.getElementById('mainIn').value.trim() === "") return alert("Escribe algo primero.");
+        document.getElementById('modalVerifica').style.display = 'block';
+    }
+
     async function enviarFinal() {
         const msg = document.getElementById('mainIn').value;
         const real = document.getElementById('nombreReal').value;
-        if(real.length < 2) return alert("Escribe tu nombre real");
-        
-        const anons = ["Panda", "Zorro", "Halcon", "Lobo", "Tigre", "Fenix"];
-        const anon = anons[Math.floor(Math.random()*anons.length)] + " Anónimo";
-        
-        await client.from('confesiones').insert([{ mensaje: msg, autor: anon, nombre_real: real, likes: 0 }]);
-        document.getElementById('mainIn').value = '';
+        if(real.trim().length < 2) return alert("Por favor, pon tu nombre real.");
+
+        const anons = ["Lobo", "Zorro", "Gato", "Panda", "Águila", "León"];
+        const alias = anons[Math.floor(Math.random() * anons.length)] + " Anónimo";
+
+        await client.from('confesiones').insert([{
+            mensaje: msg,
+            autor: alias,
+            nombre_real: real,
+            likes: 0
+        }]);
+
+        document.getElementById('mainIn').value = "";
+        document.getElementById('nombreReal').value = "";
         document.getElementById('modalVerifica').style.display = 'none';
-        refresh();
+        cargarMuro();
     }
 
     async function darLike(id) {
         await client.rpc('incrementar_like', { confesion_id: id });
-        if(!isAdmin) {
-            let mis = JSON.parse(localStorage.getItem('likes_v1') || '[]');
-            mis.push(id);
-            localStorage.setItem('likes_v1', JSON.stringify(mis));
-        }
-        refresh();
+        cargarMuro();
     }
 
     async function responder(id, e) {
-        if(e.key === 'Enter' && e.target.value.trim()){
-            await client.from('respuestas').insert([{ mensaje: e.target.value, confesion_id: id, es_admin: isAdmin }]);
+        if(e.key === 'Enter' && e.target.value.trim() !== ""){
+            await client.from('respuestas').insert([{
+                mensaje: e.target.value,
+                confesion_id: id,
+                es_admin: isAdmin
+            }]);
             e.target.value = '';
-            refresh();
+            cargarMuro();
         }
     }
 
+    // --- INICIO ---
     window.onload = async () => {
-        if(!sessionStorage.getItem('v')) { await client.rpc('incrementar_visitas_config'); sessionStorage.setItem('v', '1'); }
-        refresh();
+        // Incrementar visitas al entrar (solo una vez por sesión)
+        if (!sessionStorage.getItem('visited')) {
+            await client.rpc('incrementar_visitas_config');
+            sessionStorage.setItem('visited', 'true');
+        }
+        cargarMuro();
     };
 
-    // Realtime Total
-    client.channel('maestro').on('postgres_changes', { event: '*', schema: 'public' }, refresh).subscribe();
+    // Escuchar cambios en tiempo real
+    client.channel('any').on('postgres_changes', { event: '*', schema: 'public' }, cargarMuro).subscribe();
+
 </script>
 </body>
 </html>
