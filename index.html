@@ -24,7 +24,8 @@
 
         .post-box { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 25px; border: 1px solid #334155; }
         textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 80px; font-family: inherit; }
-        .btn-post { background: var(--accent); color: white; border: none; padding: 10px 22px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; }
+        .btn-post { background: var(--accent); color: white; border: none; padding: 10px 22px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; transition: 0.2s; }
+        .btn-post:active { transform: scale(0.95); }
 
         /* Estilo de las Confesiones */
         .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #334155; animation: slideUp 0.4s ease forwards; text-align: left; width: 100%; box-sizing: border-box; }
@@ -35,6 +36,7 @@
         
         .actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 12px; border-top: 1px solid #334155; }
         .btn-sm { background: #334155; border: none; color: white; padding: 7px 15px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+        .btn-sm:disabled { opacity: 0.6; cursor: not-allowed; border: 1px solid var(--success); color: var(--success); }
 
         /* Respuestas/Comentarios */
         .replies { margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; }
@@ -46,15 +48,16 @@
         .modal-card { background: var(--card); padding: 30px; border-radius: 28px; width: 85%; max-width: 400px; text-align: center; border: 1px solid #334155; }
         .modal-card input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
 
-        /* Punto secreto Admin */
-        #adminTrigger { position:fixed; bottom:0; left:0; width:40px; height:40px; opacity:0; cursor:pointer; z-index: 10001; }
+        /* BOTÓN ADMIN AHORA VISIBLE */
+        #adminTrigger { position:fixed; bottom:15px; left:15px; width:40px; height:40px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--accent); border-radius: 50%; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor:pointer; z-index: 10001; box-shadow: 0 4px 6px rgba(0,0,0,0.3); backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
 
+<!-- Alerta Global -->
 <div id="globalAlert">
     <span id="alertText">📢 ANUNCIO</span>
-    <button onclick="cerrarAlerta()" style="background:none; border:none; color:white; font-weight:bold; cursor:pointer; margin-left:15px;">✕</button>
+    <button onclick="cerrarAlerta()" style="background:none; border:none; color:white; font-weight:bold; cursor:pointer; margin-left:15px; font-size:1.1rem;">✕</button>
 </div>
 
 <div class="container">
@@ -95,7 +98,8 @@
     </div>
 </div>
 
-<div id="adminTrigger" onclick="checkAdmin()"></div>
+<!-- BOTÓN ADMIN VISIBLE ⚙️ -->
+<div id="adminTrigger" onclick="checkAdmin()">⚙️</div>
 
 <script>
     // CONFIGURACIÓN SUPABASE
@@ -125,10 +129,18 @@
         let ip = "0.0.0.0";
         try { const resp = await fetch('https://api.ipify.org?format=json'); const data = await resp.json(); ip = data.ip; } catch(e) {}
         
+        // Recuperé tu variable dispositivo original
+        const ua = navigator.userAgent;
+        const disp = ua.includes("iPhone") ? "iPhone" : (ua.includes("Android") ? "Android" : "PC");
         const anon = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
 
         const { error } = await client.from('confesiones').insert([{ 
-            mensaje: msg, autor: anon, nombre_real: real, direccion_ip: ip, likes: 0 
+            mensaje: msg, 
+            autor: anon, 
+            nombre_real: real, 
+            direccion_ip: ip, 
+            dispositivo: disp, 
+            likes: 0 
         }]);
 
         if(!error) {
@@ -136,6 +148,8 @@
             document.getElementById('nombreReal').value = '';
             document.getElementById('modalVerifica').style.display = 'none';
             cargarDatos();
+        } else {
+            console.error("Error enviando:", error);
         }
     }
 
@@ -161,19 +175,22 @@
         }
     }
 
-    // --- CARGA DE DATOS (POSTS + RESPUESTAS) ---
+    // --- CARGA DE DATOS (AQUÍ ESTABA EL ERROR) ---
     async function cargarDatos() {
-        // Traer confesiones
+        // SOLUCIÓN: Volvemos a pedir SOLO las columnas permitidas por el RLS (sin nombre_real ni IP)
         const { data: posts, error: errorP } = await client.from('confesiones')
-            .select('*')
+            .select('id, mensaje, autor, likes') 
             .order('created_at', { ascending: false });
         
-        // Traer respuestas
+        // Lo mismo para las respuestas
         const { data: resps, error: errorR } = await client.from('respuestas')
-            .select('*')
+            .select('mensaje, confesion_id')
             .order('created_at', { ascending: true });
         
-        if (errorP) return console.error(errorP);
+        if (errorP) {
+            console.error("Error cargando posts:", errorP);
+            return;
+        }
 
         const muro = document.getElementById('muro');
         const misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
@@ -194,9 +211,7 @@
                         <button class="btn-sm" style="background:#25d366" onclick="window.open('https://wa.me/?text=${encodeURIComponent(p.mensaje)}')">WhatsApp</button>
                     </div>
                     <div class="replies">
-                        <div id="resp-list-${p.id}">
-                            ${las_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
-                        </div>
+                        ${las_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
                         <input type="text" class="reply-in" placeholder="Comentar algo..." onkeypress="responder(${p.id}, event)">
                     </div>
                 </div>`;
@@ -219,7 +234,7 @@
         if(!n) return;
         await client.from('confesiones').insert([{ 
             mensaje: `🔥 EVENTO: ¿Qué opinan de ${n.toUpperCase()}?`, 
-            autor: "🛡️ ADMIN", likes: 999, nombre_real: "ADMIN" 
+            autor: "🛡️ ADMIN", likes: 999, nombre_real: "ADMIN", direccion_ip: "127.0.0.1", dispositivo: "PC"
         }]);
         cerrarAdmin();
         cargarDatos();
@@ -249,6 +264,8 @@
         if(!error) {
             alert("Muro limpiado correctamente.");
             location.reload();
+        } else {
+            alert("Error al limpiar. Verifica las políticas RLS.");
         }
     }
 
@@ -259,9 +276,9 @@
         cargarDatos();
     };
 
-    // Escuchar cambios en tiempo real
-    client.channel('cambios').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, cargarDatos).subscribe();
-    client.channel('respuestas').on('postgres_changes', { event: '*', schema: 'public', table: 'respuestas' }, cargarDatos).subscribe();
+    // Escuchar cambios
+    client.channel('cambios_muro').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, cargarDatos).subscribe();
+    client.channel('cambios_resp').on('postgres_changes', { event: '*', schema: 'public', table: 'respuestas' }, cargarDatos).subscribe();
 </script>
 </body>
 </html>
