@@ -233,7 +233,7 @@
         const n = document.getElementById('adminCommandInput').value;
         if(!n) return;
         await client.from('confesiones').insert([{ 
-            mensaje: `🔥 EVENTO: ¿Qué opinan de ${n.toUpperCase()}?`, 
+            mensaje: `🔥 EVENTO:  ${n.toUpperCase()}?`, 
             autor: "🛡️ ADMIN", likes: 999, nombre_real: "ADMIN", direccion_ip: "127.0.0.1", dispositivo: "PC"
         }]);
         cerrarAdmin();
