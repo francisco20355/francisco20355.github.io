@@ -577,7 +577,7 @@
   </div>
 
   <div id="panelAdmin" class="modal-overlay">
-    <div class="modal-card" style="border: 1px solid rgba(96,165,250,0.55);">
+    <div class="modal-card" style="border: 1px solid rgba(90,167,255,0.55);">
       <h3>⚙️ Centro de Mando Admin</h3>
       <p style="color: var(--dim); font-size: 0.88rem;">Panel de administración, anuncios y acciones de moderación.</p>
 
@@ -602,7 +602,6 @@
   <div id="adminTrigger" onclick="checkAdmin()">⚙️</div>
 
   <script>
-    // CONFIGURACIÓN SUPABASE
     const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -650,7 +649,6 @@
       updateCounter();
     });
 
-    // --- LÓGICA DE USUARIO ---
     function abrirModal() {
       const txt = document.getElementById('mainIn').value.trim();
       if (!txt) return alert('Escribe una confesión primero.');
@@ -686,7 +684,7 @@
       btn.textContent = 'Publicando...';
 
       try {
-        const { error } = await client.from('confesiones').insert([{ 
+        const { error } = await client.from('confesiones').insert([{
           mensaje: msg,
           autor: anon,
           nombre_real: real,
@@ -717,4 +715,6 @@
       if (misLikes.includes(id)) return;
 
       const { error } = await client.rpc('incrementar_like', { confesion_id: id });
-      if (
+      if (!error) {
+        misLikes.push(id);
+        localStorage.setIte
