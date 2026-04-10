@@ -1,716 +1,200 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Confesionario Oficial | Pro Admin</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root {
-      --bg: #04101f;
-      --bg-2: #07182e;
-      --card: rgba(8, 20, 38, 0.86);
-      --card-solid: #0b1d35;
-      --accent: #5aa7ff;
-      --accent-2: #2f7ef7;
-      --success: #12c48b;
-      --text: #f4f8ff;
-      --dim: #90a7c4;
-      --danger: #ef5b5b;
-      --warning: #f4b74a;
-      --border: rgba(127, 163, 214, 0.14);
-      --shadow: 0 16px 42px rgba(0, 0, 0, 0.34);
-      --radius: 24px;
-    }
-
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-
-    body {
-      margin: 0;
-      font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at top, rgba(90, 167, 255, 0.12), transparent 32%),
-        radial-gradient(circle at 85% 0%, rgba(18, 196, 139, 0.08), transparent 22%),
-        linear-gradient(180deg, #03111f 0%, #061225 45%, #04101f 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      overflow-x: hidden;
-    }
-
-    #globalAlert {
-      display: none;
-      background: linear-gradient(90deg, #c53939, #a61f1f);
-      color: white;
-      padding: 12px 16px;
-      text-align: center;
-      font-weight: 700;
-      position: sticky;
-      top: 0;
-      z-index: 999;
-      width: 100%;
-      border-bottom: 1px solid rgba(255,255,255,0.12);
-      backdrop-filter: blur(8px);
-    }
-
-    .container {
-      width: 100%;
-      max-width: 760px;
-      padding: 16px;
-      padding-bottom: 96px;
-    }
-
-    header {
-      text-align: center;
-      padding: 16px 8px 12px;
-    }
-
-    .hero-card {
-      background: linear-gradient(180deg, rgba(11, 29, 53, 0.92), rgba(6, 18, 37, 0.9));
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      padding: 22px 18px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(12px);
-    }
-
-    .live {
-      font-size: 0.74rem;
-      color: var(--success);
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font-weight: 700;
-    }
-
-    .dot {
-      width: 9px;
-      height: 9px;
-      background: var(--success);
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-      box-shadow: 0 0 0 0 rgba(18, 196, 139, 0.75);
-    }
-
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(18, 196, 139, 0.7); }
-      70% { box-shadow: 0 0 0 12px rgba(18, 196, 139, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(18, 196, 139, 0); }
-    }
-
-    h1 {
-      font-size: clamp(2rem, 4vw, 3rem);
-      line-height: 1.05;
-      margin: 10px 0 10px;
-      letter-spacing: -0.03em;
-    }
-
-    .subtitle {
-      color: var(--dim);
-      font-size: 0.98rem;
-      max-width: 560px;
-      margin: 0 auto 18px;
-      line-height: 1.5;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .stat {
-      background: rgba(5, 16, 31, 0.72);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 12px 10px;
-      text-align: center;
-    }
-
-    .stat strong {
-      display: block;
-      font-size: 1.15rem;
-      margin-bottom: 4px;
-    }
-
-    .stat span {
-      color: var(--dim);
-      font-size: 0.8rem;
-    }
-
-    .post-box {
-      background: linear-gradient(180deg, rgba(11, 29, 53, 0.9), rgba(6, 18, 37, 0.88));
-      border-radius: 28px;
-      padding: 16px;
-      margin: 18px 0 22px;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-
-    .post-label {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      color: var(--dim);
-      font-size: 0.86rem;
-      gap: 10px;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 96px;
-      background: transparent;
-      border: none;
-      color: white;
-      font-size: 1rem;
-      outline: none;
-      resize: none;
-      font-family: inherit;
-      line-height: 1.5;
-      padding: 2px 0 10px;
-    }
-
-    textarea::placeholder { color: #6d84a4; }
-
-    .compose-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-
-    .helper {
-      color: var(--dim);
-      font-size: 0.82rem;
-      line-height: 1.4;
-    }
-
-    .btn-post,
-    .btn-sm,
-    .btn-ghost {
-      border: none;
-      cursor: pointer;
-      transition: transform .18s ease, opacity .18s ease, background .18s ease, border-color .18s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .btn-post {
-      background: linear-gradient(180deg, var(--accent), var(--accent-2));
-      color: white;
-      padding: 12px 20px;
-      border-radius: 14px;
-      font-weight: 800;
-      box-shadow: 0 10px 24px rgba(47, 126, 247, 0.28);
-    }
-
-    .btn-post:hover, .btn-sm:hover, .btn-ghost:hover { transform: translateY(-1px); }
-    .btn-post:active, .btn-sm:active, .btn-ghost:active { transform: scale(0.98); }
-
-    .btn-sm {
-      background: rgba(14, 31, 55, 0.95);
-      border: 1px solid rgba(127, 163, 214, 0.14);
-      color: white;
-      padding: 9px 14px;
-      border-radius: 12px;
-      font-size: 0.88rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      white-space: nowrap;
-    }
-
-    .btn-ghost {
-      background: rgba(6, 18, 37, 0.72);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 0.88rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .btn-sm:disabled { opacity: 0.65; cursor: not-allowed; }
-
-    .feed-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin: 4px 2px 14px;
-      flex-wrap: wrap;
-    }
-
-    .feed-title {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .feed-title strong { font-size: 1.1rem; }
-    .feed-title span { color: var(--dim); font-size: 0.85rem; }
-
-    .cards-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .card {
-      background: linear-gradient(180deg, rgba(11, 29, 53, 0.92), rgba(6, 18, 37, 0.92));
-      border-radius: 24px;
-      padding: 18px;
-      border: 1px solid var(--border);
-      animation: slideUp 0.34s ease forwards;
-      text-align: left;
-      width: 100%;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .card-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-
-    .author {
-      font-size: 0.9rem;
-      font-weight: 800;
-      color: var(--accent);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .meta {
-      color: var(--dim);
-      font-size: 0.78rem;
-      margin-top: 4px;
-    }
-
-    .badge {
-      background: linear-gradient(180deg, #ec4899, #db2777);
-      color: white;
-      font-size: 10px;
-      padding: 3px 9px;
-      border-radius: 999px;
-      font-weight: 800;
-      letter-spacing: 0.03em;
-    }
-
-    .card-text {
-      font-size: 1.03rem;
-      color: white;
-      line-height: 1.65;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(127, 163, 214, 0.12);
-    }
-
-    .replies {
-      margin-top: 14px;
-      background: rgba(2, 8, 20, 0.34);
-      border-radius: 18px;
-      padding: 12px;
-      border: 1px solid rgba(127, 163, 214, 0.12);
-    }
-
-    .replies-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      color: var(--dim);
-      font-size: 0.82rem;
-      gap: 10px;
-    }
-
-    .reply-txt {
-      color: #d3def0;
-      font-size: 0.88rem;
-      margin-bottom: 8px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      word-break: break-word;
-    }
-
-    .reply-txt:last-child {
-      margin-bottom: 0;
-      border-bottom: none;
-      padding-bottom: 0;
-    }
-
-    .reply-in {
-      width: 100%;
-      margin-top: 10px;
-      background: rgba(6, 18, 37, 0.72);
-      border: 1px solid rgba(127, 163, 214, 0.18);
-      color: white;
-      border-radius: 12px;
-      outline: none;
-      font-size: 0.92rem;
-      padding: 12px 12px;
-    }
-
-    .reply-in::placeholder { color: #6d84a4; }
-
-    .empty-state {
-      text-align: center;
-      padding: 48px 18px;
-      color: var(--dim);
-      border: 1px dashed rgba(127, 163, 214, 0.22);
-      border-radius: 24px;
-      background: rgba(6, 18, 37, 0.32);
-    }
-
-    .empty-state strong {
-      display: block;
-      color: var(--text);
-      margin-bottom: 8px;
-      font-size: 1.05rem;
-    }
-
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 6, 23, 0.94);
-      z-index: 10000;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(12px);
-      padding: 18px;
-    }
-
-    .modal-card {
-      background: linear-gradient(180deg, rgba(11, 29, 53, 0.98), rgba(6, 18, 37, 0.98));
-      padding: 24px;
-      border-radius: 28px;
-      width: 100%;
-      max-width: 460px;
-      text-align: center;
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-
-    .modal-card h3 {
-      margin: 10px 0 6px;
-      font-size: 1.35rem;
-    }
-
-    .modal-card p {
-      margin: 0 0 16px;
-    }
-
-    .modal-card input {
-      width: 100%;
-      padding: 14px 14px;
-      margin: 10px 0;
-      border-radius: 14px;
-      border: 1px solid rgba(127, 163, 214, 0.18);
-      background: rgba(2, 8, 20, 0.68);
-      color: white;
-      box-sizing: border-box;
-      text-align: left;
-      outline: none;
-    }
-
-    .modal-actions {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    #adminTrigger {
-      position: fixed;
-      bottom: 16px;
-      left: 16px;
-      width: 48px;
-      height: 48px;
-      background: rgba(6, 18, 37, 0.92);
-      border: 1px solid rgba(90, 167, 255, 0.75);
-      border-radius: 50%;
-      color: white;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 10001;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.28);
-      backdrop-filter: blur(10px);
-    }
-
-    .admin-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin: 14px 0 18px;
-      text-align: left;
-    }
-
-    .admin-metric {
-      background: rgba(2, 8, 20, 0.42);
-      border: 1px solid rgba(127,163,214,0.14);
-      border-radius: 18px;
-      padding: 12px;
-    }
-
-    .admin-metric strong {
-      display: block;
-      font-size: 1.05rem;
-      margin-bottom: 4px;
-    }
-
-    .admin-metric span {
-      color: var(--dim);
-      font-size: 0.8rem;
-    }
-
-    .admin-actions {
-      display: grid;
-      gap: 10px;
-    }
-
-    .notice {
-      margin-top: 12px;
-      color: var(--dim);
-      font-size: 0.8rem;
-      line-height: 1.4;
-    }
-
-    @media (max-width: 640px) {
-      .container { padding: 12px; }
-      .stats { grid-template-columns: 1fr; }
-      .card { padding: 16px; border-radius: 22px; }
-      .hero-card, .post-box, .modal-card { border-radius: 24px; }
-      .card-head { flex-direction: column; }
-      .admin-grid { grid-template-columns: 1fr; }
-      .actions { gap: 8px; }
-      .btn-sm, .btn-ghost { width: 100%; justify-content: center; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confesionario Oficial</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#0f172a;
+  --card:#1e293b;
+  --accent:#3b82f6;
+  --success:#10b981;
+  --text:#f1f5f9;
+  --dim:#94a3b8;
+}
+body{
+  font-family:'Segoe UI',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  margin:0;
+  display:flex;
+  justify-content:center;
+}
+.container{
+  width:100%;
+  max-width:500px;
+  padding:15px;
+}
+.post-box,.card{
+  background:var(--card);
+  border-radius:20px;
+  padding:15px;
+  margin-bottom:15px;
+}
+textarea{
+  width:100%;
+  background:transparent;
+  border:none;
+  color:white;
+  font-size:16px;
+  outline:none;
+  resize:none;
+  min-height:80px;
+}
+.btn-post{
+  background:var(--accent);
+  color:white;
+  border:none;
+  padding:10px 20px;
+  border-radius:12px;
+  cursor:pointer;
+  float:right;
+}
+.author{
+  font-size:0.85rem;
+  font-weight:bold;
+  color:var(--accent);
+  margin-bottom:10px;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+.btn-sm{
+  background:#334155;
+  border:none;
+  color:white;
+  padding:6px 12px;
+  border-radius:10px;
+  cursor:pointer;
+}
+.replies{
+  margin-top:10px;
+}
+.reply-in{
+  width:100%;
+  background:transparent;
+  border:none;
+  border-bottom:1px solid #475569;
+  color:white;
+  padding:6px 0;
+}
+</style>
 </head>
 <body>
-  <div id="globalAlert">
-    <span id="alertText">📢 ANUNCIO</span>
-    <button onclick="cerrarAlerta()" style="background:none; border:none; color:white; font-weight:bold; cursor:pointer; margin-left:15px; font-size:1.1rem;">✕</button>
+
+<div class="container">
+  <h1>🤫 Confesionario Oficial</h1>
+
+  <div class="post-box">
+    <textarea id="mainIn" placeholder="¿Qué quieres confesar hoy?"></textarea>
+    <button class="btn-post" onclick="enviarFinal()">Publicar</button>
   </div>
 
-  <div class="container">
-    <header>
-      <div class="hero-card">
-        <div class="live"><div class="dot"></div> SISTEMA PROTEGIDO CON RLS</div>
-        <h1>🤫 Confesionario Oficial</h1>
-        <p class="subtitle">Seguro, anónimo y moderado. Diseñado con una experiencia más limpia, moderna y profesional.</p>
-        <div class="stats">
-          <div class="stat"><strong id="statPosts">0</strong><span>Confesiones</span></div>
-          <div class="stat"><strong id="statReplies">0</strong><span>Respuestas</span></div>
-          <div class="stat"><strong id="statLikes">0</strong><span>Likes</span></div>
+  <div id="muro"></div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
+const SUPABASE_KEY = 'TU_ANON_KEY';
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const animales = ["Lobo","Zorro","Panda","Tigre","León","Águila","Leopardo","Búho"];
+
+function escudar(texto){
+  const p=document.createElement('p');
+  p.textContent=texto;
+  return p.innerHTML;
+}
+
+async function enviarFinal(){
+  const msg=document.getElementById('mainIn').value;
+  if(!msg.trim()) return;
+
+  const anon=animales[Math.floor(Math.random()*animales.length)]+" Anónimo";
+
+  const {error}=await client.from('confesiones').insert([{
+    mensaje:msg,
+    autor:anon,
+    likes:0
+  }]);
+
+  if(!error){
+    document.getElementById('mainIn').value='';
+    cargarDatos();
+  }else{
+    console.error(error);
+    alert("Error al publicar");
+  }
+}
+
+async function darLike(id){
+  const {data,error}=await client
+    .from('confesiones')
+    .select('likes')
+    .eq('id',id)
+    .single();
+
+  if(error) return;
+
+  await client
+    .from('confesiones')
+    .update({likes:(data.likes||0)+1})
+    .eq('id',id);
+
+  cargarDatos();
+}
+
+async function responder(id,e){
+  if(e.key==='Enter' && e.target.value.trim()){
+    await client.from('respuestas').insert([{
+      mensaje:e.target.value,
+      confesion_id:id
+    }]);
+    e.target.value='';
+    cargarDatos();
+  }
+}
+
+async function cargarDatos(){
+  const {data:posts}=await client
+    .from('confesiones')
+    .select('*')
+    .order('created_at',{ascending:false});
+
+  const {data:resps}=await client
+    .from('respuestas')
+    .select('*');
+
+  const muro=document.getElementById('muro');
+
+  muro.innerHTML=(posts||[]).map(p=>{
+    const las_resps=(resps||[]).filter(r=>r.confesion_id===p.id);
+
+    return `
+      <div class="card">
+        <div class="author">${escudar(p.autor)}</div>
+        <div>${escudar(p.mensaje)}</div>
+
+        <div class="actions">
+          <button class="btn-sm" onclick="darLike(${p.id})">
+            ❤️ ${p.likes||0}
+          </button>
+        </div>
+
+        <div class="replies">
+          ${las_resps.map(r=>`<div>↳ ${escudar(r.mensaje)}</div>`).join('')}
+          <input class="reply-in" placeholder="Comentar..." onkeypress="responder(${p.id},event)">
         </div>
       </div>
-    </header>
+    `;
+  }).join('');
+}
 
-    <div class="post-box">
-      <div class="post-label">
-        <span>Publica una confesión</span>
-        <span id="charCount">0/280</span>
-      </div>
-      <textarea id="mainIn" maxlength="280" placeholder="¿Qué quieres confesar hoy?"></textarea>
-      <div class="compose-actions">
-        <span class="helper">Consejo: sé claro, corto y directo. Máximo 280 caracteres.</span>
-        <button class="btn-post" onclick="abrirModal()">Publicar</button>
-      </div>
-    </div>
-
-    <div class="feed-topbar">
-      <div class="feed-title">
-        <strong>Últimas confesiones</strong>
-        <span>Se actualiza en tiempo real.</span>
-      </div>
-      <button class="btn-ghost" onclick="cargarDatos()">🔄 Actualizar</button>
-    </div>
-
-    <div id="muro" class="cards-wrap"></div>
-    <div class="notice">Si no se ven confesiones, revisa que exista la vista <b>confesiones_publicas</b> y que RLS/políticas estén aplicadas.</div>
-  </div>
-
-  <div id="modalVerifica" class="modal-overlay">
-    <div class="modal-card">
-      <div style="font-size: 2.5rem;">🛡️</div>
-      <h3>Verificación Anti-Fraude</h3>
-      <p style="font-size: 0.88rem; color: var(--dim);">Tu nombre e IP solo los verá el sistema.</p>
-      <input type="text" id="nombreReal" placeholder="Tu nombre completo" />
-      <div class="modal-actions">
-        <button class="btn-post" style="width:100%; padding: 14px;" onclick="enviarFinal()">Confirmar</button>
-        <button class="btn-ghost" onclick="cerrarModalVerificacion()">Cancelar</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="panelAdmin" class="modal-overlay">
-    <div class="modal-card" style="border: 1px solid rgba(90,167,255,0.55);">
-      <h3>⚙️ Centro de Mando Admin</h3>
-      <p style="color: var(--dim); font-size: 0.88rem;">Panel de administración, anuncios y acciones de moderación.</p>
-
-      <div class="admin-grid">
-        <div class="admin-metric"><strong id="adminPosts">0</strong><span>Posts</span></div>
-        <div class="admin-metric"><strong id="adminReplies">0</strong><span>Respuestas</span></div>
-        <div class="admin-metric"><strong id="adminLikes">0</strong><span>Likes</span></div>
-        <div class="admin-metric"><strong id="adminTop">0</strong><span>Top posts</span></div>
-      </div>
-
-      <input type="text" id="adminCommandInput" placeholder="Nombre o mensaje para anuncio..." />
-
-      <div class="admin-actions">
-        <button class="btn-post" onclick="lanzarEvento()">Lanzar como Post 🔥</button>
-        <button class="btn-post" style="background: linear-gradient(180deg, #f59e0b, #d97706);" onclick="publicarAnuncio()">Poner en Barra Roja 📢</button>
-        <button class="btn-post" style="background: linear-gradient(180deg, #ef4444, #dc2626);" onclick="resetTodo()">🔥 VACIAR MURO</button>
-        <button class="btn-ghost" onclick="cerrarAdmin()">Cerrar Panel</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="adminTrigger" onclick="checkAdmin()">⚙️</div>
-
-  <script>
-    const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    const animales = ['Lobo', 'Zorro', 'Panda', 'Tigre', 'León', 'Águila', 'Leopardo', 'Búho'];
-    let cargando = false;
-
-    function escudar(texto) {
-      const p = document.createElement('p');
-      p.textContent = texto ?? '';
-      return p.innerHTML;
-    }
-
-    function escaparAtributo(texto) {
-      const div = document.createElement('div');
-      div.textContent = texto ?? '';
-      return div.innerHTML;
-    }
-
-    function formatTimeAgo(dateValue) {
-      if (!dateValue) return 'recién publicado';
-      const date = new Date(dateValue);
-      if (isNaN(date.getTime())) return 'recién publicado';
-
-      const diff = Math.floor((Date.now() - date.getTime()) / 1000);
-      if (diff < 10) return 'hace unos segundos';
-      if (diff < 60) return `hace ${diff} seg`;
-      const min = Math.floor(diff / 60);
-      if (min < 60) return `hace ${min} min`;
-      const hr = Math.floor(min / 60);
-      if (hr < 24) return `hace ${hr} h`;
-      const d = Math.floor(hr / 24);
-      return `hace ${d} d`;
-    }
-
-    function updateCounter() {
-      const el = document.getElementById('mainIn');
-      document.getElementById('charCount').textContent = `${el.value.length}/280`;
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const main = document.getElementById('mainIn');
-      main.addEventListener('input', updateCounter);
-      updateCounter();
-    });
-
-    function abrirModal() {
-      const txt = document.getElementById('mainIn').value.trim();
-      if (!txt) return alert('Escribe una confesión primero.');
-      document.getElementById('modalVerifica').style.display = 'flex';
-      document.getElementById('nombreReal').focus();
-    }
-
-    function cerrarModalVerificacion() {
-      document.getElementById('modalVerifica').style.display = 'none';
-    }
-
-    async function enviarFinal() {
-      const msg = document.getElementById('mainIn').value.trim();
-      const real = document.getElementById('nombreReal').value.trim();
-
-      if (msg.length < 3) return alert('Escribe una confesión válida.');
-      if (real.length < 3) return alert('Nombre real requerido.');
-
-      let ip = '0.0.0.0';
-      try {
-        const resp = await fetch('https://api.ipify.org?format=json');
-        const data = await resp.json();
-        ip = data.ip;
-      } catch (e) {}
-
-      const ua = navigator.userAgent;
-      const disp = ua.includes('iPhone') ? 'iPhone' : (ua.includes('Android') ? 'Android' : 'PC');
-      const anon = animales[Math.floor(Math.random() * animales.length)] + ' Anónimo';
-
-      const btn = document.querySelector('#modalVerifica .btn-post');
-      const oldText = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = 'Publicando...';
-
-      try {
-        const { error } = await client.from('confesiones').insert([{
-          mensaje: msg,
-          autor: anon,
-          nombre_real: real,
-          direccion_ip: ip,
-          dispositivo: disp,
-          likes: 0,
-          reportado: false
-        }]);
-
-        if (!error) {
-          document.getElementById('mainIn').value = '';
-          document.getElementById('nombreReal').value = '';
-          cerrarModalVerificacion();
-          updateCounter();
-          await cargarDatos();
-        } else {
-          console.error('Error enviando:', error);
-          alert('No se pudo publicar. Revisa la consola y las políticas de Supabase.');
-        }
-      } finally {
-        btn.disabled = false;
-        btn.textContent = oldText;
-      }
-    }
-
-    async function darLike(id) {
-      const key = 'likes_v1';
-      let misLikes = J
+window.onload=cargarDatos;
+</script>
+</body>
+</html>
