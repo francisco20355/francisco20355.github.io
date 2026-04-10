@@ -212,46 +212,54 @@
 
     // --- CARGA DE DATOS ---
     async function cargarDatos() {
-        const { data: posts, error: errorP } = await client.from('confesiones')
-            .select('id, mensaje, autor, likes') 
-            .order('created_at', { ascending: false });
-        
-        const { data: resps, error: errorR } = await client.from('respuestas')
-            .select('mensaje, confesion_id')
-            .order('created_at', { ascending: true });
-        
-        if (errorP) {
-            console.error("Error cargando posts:", errorP);
-            return;
-        }
-
-        const muro = document.getElementById('muro');
-        const misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
-
-        muro.innerHTML = posts.map((p, index) => {
-            const yaVoto = misLikes.includes(p.id);
-            const las_resps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
-            const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
-            // Retraso en la animación para que entren en cascada
-            const animDelay = index * 0.1;
-            
-            return `
-                <div class="glass-box card" style="animation-delay: ${animDelay}s">
-                    <div class="author">👤 ${escudar(p.autor)} ${esTop}</div>
-                    <div class="mensaje-texto">${escudar(p.mensaje)}</div>
-                    <div class="actions">
-                        <button class="btn-sm" onclick="darLike(${p.id})" ${yaVoto ? 'disabled' : ''}>
-                            ${yaVoto ? '✅' : '❤️'} ${p.likes || 0}
-                        </button>
-                        <button class="btn-sm" style="background: rgba(37, 211, 102, 0.2); border-color: #25d366; color: #25d366;" onclick="window.open('https://wa.me/?text=¡Mira esta confesión anónima!🤫:%0A%0A%22${encodeURIComponent(p.mensaje)}%22')">WhatsApp</button>
-                    </div>
-                    <div class="replies">
-                        ${las_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
-                        <input type="text" class="reply-in" placeholder="Escribe un comentario y presiona Enter..." onkeypress="responder(${p.id}, event)">
-                    </div>
-                </div>`;
-        }).join('');
+    // EL CAMBIO ESTÁ AQUÍ: Solo pedimos id, mensaje, autor y likes.
+    // NO pedimos ni nombre_real ni direccion_ip.
+    const { data: posts, error: errorP } = await client.from('confesiones')
+        .select('id, mensaje, autor, likes') 
+        .order('created_at', { ascending: false });
+    
+    const { data: resps, error: errorR } = await client.from('respuestas')
+        .select('mensaje, confesion_id')
+        .order('created_at', { ascending: true });
+    
+    if (errorP) {
+        console.error("Error cargando posts:", errorP);
+        // Si sale error aquí, es porque el RLS todavía bloquea la lectura
+        return;
     }
+
+    const muro = document.getElementById('muro');
+    if (!posts || posts.length === 0) {
+        muro.innerHTML = "<p style='text-align:center; color:gray;'>No hay confesiones aún. ¡Sé el primero!</p>";
+        return;
+    }
+
+    const misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
+
+    muro.innerHTML = posts.map((p, index) => {
+        const yaVoto = misLikes.includes(p.id);
+        const las_resps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
+        const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
+        const animDelay = index * 0.1;
+        
+        return `
+            <div class="glass-box card" style="animation-delay: ${animDelay}s">
+                <div class="author">👤 ${escudar(p.autor)} ${esTop}</div>
+                <div class="mensaje-texto">${escudar(p.mensaje)}</div>
+                <div class="actions">
+                    <button class="btn-sm" onclick="darLike(${p.id})" ${yaVoto ? 'disabled' : ''}>
+                        ${yaVoto ? '✅' : '❤️'} ${p.likes || 0}
+                    </button>
+                    <button class="btn-sm" style="background: rgba(37, 211, 102, 0.2); border-color: #25d366; color: #25d366;" onclick="window.open('https://wa.me/?text=¡Mira esta confesión!🤫:%0A%0A%22${encodeURIComponent(p.mensaje)}%22')">WhatsApp</button>
+                </div>
+                <div class="replies">
+                    ${las_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
+                    <input type="text" class="reply-in" placeholder="Comentar..." onkeypress="responder(${p.id}, event)">
+                </div>
+            </div>`;
+    }).join('');
+    }
+.
 
     // --- LÓGICA DE ADMINISTRADOR ---
     async function checkAdmin() {
