@@ -24,7 +24,6 @@
     }
 
     * { box-sizing: border-box; }
-
     html, body { height: 100%; }
 
     body {
@@ -243,10 +242,7 @@
       gap: 8px;
     }
 
-    .btn-sm:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-    }
+    .btn-sm:disabled { opacity: 0.65; cursor: not-allowed; }
 
     .feed-topbar {
       display: flex;
@@ -263,14 +259,8 @@
       gap: 2px;
     }
 
-    .feed-title strong {
-      font-size: 1.1rem;
-    }
-
-    .feed-title span {
-      color: var(--dim);
-      font-size: 0.85rem;
-    }
+    .feed-title strong { font-size: 1.1rem; }
+    .feed-title span { color: var(--dim); font-size: 0.85rem; }
 
     .cards-wrap {
       display: flex;
@@ -373,7 +363,11 @@
       word-break: break-word;
     }
 
-    .reply-txt:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+    .reply-txt:last-child {
+      margin-bottom: 0;
+      border-bottom: none;
+      padding-bottom: 0;
+    }
 
     .reply-in {
       width: 100%;
@@ -508,6 +502,13 @@
       gap: 10px;
     }
 
+    .notice {
+      margin-top: 12px;
+      color: var(--dim);
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+
     @media (max-width: 640px) {
       .container { padding: 12px; }
       .stats { grid-template-columns: 1fr; }
@@ -561,6 +562,7 @@
     </div>
 
     <div id="muro" class="cards-wrap"></div>
+    <div class="notice">Si no se ven confesiones, revisa que exista la vista <b>confesiones_publicas</b> y que RLS/políticas estén aplicadas.</div>
   </div>
 
   <div id="modalVerifica" class="modal-overlay">
@@ -606,7 +608,7 @@
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const animales = ["Lobo", "Zorro", "Panda", "Tigre", "León", "Águila", "Leopardo", "Búho"];
+    const animales = ['Lobo', 'Zorro', 'Panda', 'Tigre', 'León', 'Águila', 'Leopardo', 'Búho'];
     let cargando = false;
 
     function escudar(texto) {
@@ -639,8 +641,7 @@
 
     function updateCounter() {
       const el = document.getElementById('mainIn');
-      const count = el.value.length;
-      document.getElementById('charCount').textContent = `${count}/280`;
+      document.getElementById('charCount').textContent = `${el.value.length}/280`;
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -690,7 +691,8 @@
           nombre_real: real,
           direccion_ip: ip,
           dispositivo: disp,
-          likes: 0
+          likes: 0,
+          reportado: false
         }]);
 
         if (!error) {
@@ -711,10 +713,4 @@
 
     async function darLike(id) {
       const key = 'likes_v1';
-      let misLikes = JSON.parse(localStorage.getItem(key) || '[]');
-      if (misLikes.includes(id)) return;
-
-      const { error } = await client.rpc('incrementar_like', { confesion_id: id });
-      if (!error) {
-        misLikes.push(id);
-        localStorage.setIte
+      let misLikes = J
