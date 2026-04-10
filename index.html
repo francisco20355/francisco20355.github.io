@@ -1,200 +1,278 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Confesionario Oficial</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-:root{
-  --bg:#0f172a;
-  --card:#1e293b;
-  --accent:#3b82f6;
-  --success:#10b981;
-  --text:#f1f5f9;
-  --dim:#94a3b8;
-}
-body{
-  font-family:'Segoe UI',system-ui,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  margin:0;
-  display:flex;
-  justify-content:center;
-}
-.container{
-  width:100%;
-  max-width:500px;
-  padding:15px;
-}
-.post-box,.card{
-  background:var(--card);
-  border-radius:20px;
-  padding:15px;
-  margin-bottom:15px;
-}
-textarea{
-  width:100%;
-  background:transparent;
-  border:none;
-  color:white;
-  font-size:16px;
-  outline:none;
-  resize:none;
-  min-height:80px;
-}
-.btn-post{
-  background:var(--accent);
-  color:white;
-  border:none;
-  padding:10px 20px;
-  border-radius:12px;
-  cursor:pointer;
-  float:right;
-}
-.author{
-  font-size:0.85rem;
-  font-weight:bold;
-  color:var(--accent);
-  margin-bottom:10px;
-}
-.actions{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-}
-.btn-sm{
-  background:#334155;
-  border:none;
-  color:white;
-  padding:6px 12px;
-  border-radius:10px;
-  cursor:pointer;
-}
-.replies{
-  margin-top:10px;
-}
-.reply-in{
-  width:100%;
-  background:transparent;
-  border:none;
-  border-bottom:1px solid #475569;
-  color:white;
-  padding:6px 0;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Confesionario Oficial | Pro Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg: #0f172a; --card: #1e293b; --accent: #3b82f6;
+            --success: #10b981; --text: #f1f5f9; --dim: #94a3b8; --danger: #ef4444; --warning: #f59e0b;
+        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; }
+        
+        /* Barra de Anuncio Superior */
+        #globalAlert { display:none; background: #dc2626; color: white; padding: 12px; text-align: center; font-weight: bold; position: sticky; top: 0; z-index: 999; width: 100%; border-bottom: 2px solid #991b1b; }
+
+        .container { width: 100%; max-width: 500px; padding: 10px; box-sizing: border-box; }
+        header { text-align: center; padding: 20px 0; }
+        
+        .live { font-size: 0.7rem; color: var(--success); display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 5px; text-transform: uppercase; }
+        .dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+
+        .post-box { background: var(--card); border-radius: 20px; padding: 15px; margin-bottom: 25px; border: 1px solid #334155; }
+        textarea { width: 100%; background: transparent; border: none; color: white; font-size: 16px; outline: none; resize: none; min-height: 80px; font-family: inherit; }
+        .btn-post { background: var(--accent); color: white; border: none; padding: 10px 22px; border-radius: 12px; font-weight: bold; cursor: pointer; float: right; transition: 0.2s; }
+        .btn-post:active { transform: scale(0.95); }
+
+        /* Estilo de las Confesiones */
+        .card { background: var(--card); border-radius: 20px; padding: 18px; margin-bottom: 15px; border: 1px solid #334155; animation: slideUp 0.4s ease forwards; text-align: left; width: 100%; box-sizing: border-box; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .author { font-size: 0.8rem; font-weight: bold; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .badge { background: #ec4899; color: white; font-size: 10px; padding: 2px 8px; border-radius: 6px; }
+        
+        .actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 12px; border-top: 1px solid #334155; }
+        .btn-sm { background: #334155; border: none; color: white; padding: 7px 15px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+        .btn-sm:disabled { opacity: 0.6; cursor: not-allowed; border: 1px solid var(--success); color: var(--success); }
+
+        /* Respuestas/Comentarios */
+        .replies { margin-top: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; }
+        .reply-txt { color: var(--dim); font-size: 0.85rem; margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 3px; }
+        .reply-in { width: 100%; background: transparent; border: none; color: white; border-bottom: 1px solid #475569; outline: none; font-size: 0.85rem; margin-top: 8px; }
+
+        /* Modales */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.98); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .modal-card { background: var(--card); padding: 30px; border-radius: 28px; width: 85%; max-width: 400px; text-align: center; border: 1px solid #334155; }
+        .modal-card input { width: 100%; padding: 14px; margin: 10px 0; border-radius: 12px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; text-align: center; }
+
+        /* BOTÓN ADMIN AHORA VISIBLE */
+        #adminTrigger { position:fixed; bottom:15px; left:15px; width:40px; height:40px; background: rgba(30, 41, 59, 0.8); border: 1px solid var(--accent); border-radius: 50%; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor:pointer; z-index: 10001; box-shadow: 0 4px 6px rgba(0,0,0,0.3); backdrop-filter: blur(4px); }
+    </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>🤫 Confesionario Oficial</h1>
-
-  <div class="post-box">
-    <textarea id="mainIn" placeholder="¿Qué quieres confesar hoy?"></textarea>
-    <button class="btn-post" onclick="enviarFinal()">Publicar</button>
-  </div>
-
-  <div id="muro"></div>
+<div id="globalAlert">
+    <span id="alertText">📢 ANUNCIO</span>
+    <button onclick="cerrarAlerta()" style="background:none; border:none; color:white; font-weight:bold; cursor:pointer; margin-left:15px; font-size:1.1rem;">✕</button>
 </div>
 
+<div class="container">
+    <header>
+        <div class="live"><div class="dot"></div> SISTEMA PROTEGIDO CON RLS</div>
+        <h1 style="font-size: 2.2rem; margin: 10px 0;">🤫 Confesionario Oficial</h1>
+        <p style="color: var(--dim); font-size: 0.9rem;">Seguro, anónimo y moderado.</p>
+    </header>
+
+    <div class="post-box">
+        <textarea id="mainIn" placeholder="¿Qué quieres confesar hoy?"></textarea>
+        <div style="overflow: auto;"><button class="btn-post" onclick="abrirModal()">Publicar</button></div>
+    </div>
+
+    <div id="muro"></div>
+</div>
+
+<div id="modalVerifica" class="modal-overlay">
+    <div class="modal-card">
+        <div style="font-size: 2.5rem;">🛡️</div>
+        <h3>Verificación Anti-Fraude</h3>
+        <p style="font-size: 0.8rem; color: var(--dim); margin-bottom: 15px;">Tu nombre e IP solo los verá el sistema.</p>
+        <input type="text" id="nombreReal" placeholder="Tu nombre completo">
+        <button class="btn-post" style="float:none; width:100%; padding: 15px;" onclick="enviarFinal()">Confirmar</button>
+    </div>
+</div>
+
+<div id="panelAdmin" class="modal-overlay">
+    <div class="modal-card" style="border: 2px solid var(--accent);">
+        <h3>⚙️ Centro de Mando Admin</h3>
+        <input type="text" id="adminCommandInput" placeholder="Nombre o mensaje para anuncio...">
+        <button class="btn-post" style="float:none; width:100%; margin-bottom:10px;" onclick="lanzarEvento()">Lanzar como Post 🔥</button>
+        <button class="btn-post" style="float:none; width:100%; margin-bottom:10px; background:var(--warning);" onclick="publicarAnuncio()">Poner en Barra Roja 📢</button>
+        <button class="btn-post" style="float:none; width:100%; background:var(--danger);" onclick="resetTodo()">🔥 VACIAR MURO</button>
+        <button class="btn-sm" style="margin-top:20px; width:100%; justify-content:center;" onclick="cerrarAdmin()">Cerrar Panel</button>
+    </div>
+</div>
+
+<div id="adminTrigger" onclick="checkAdmin()">⚙️</div>
+
 <script>
-const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
-const SUPABASE_KEY = 'TU_ANON_KEY';
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // CONFIGURACIÓN SUPABASE
+    const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const animales = ["Lobo","Zorro","Panda","Tigre","León","Águila","Leopardo","Búho"];
+    const animales = ["Lobo", "Zorro", "Panda", "Tigre", "León", "Águila", "Leopardo", "Búho"];
 
-function escudar(texto){
-  const p=document.createElement('p');
-  p.textContent=texto;
-  return p.innerHTML;
-}
+    function escudar(texto) {
+        const p = document.createElement('p');
+        p.textContent = texto;
+        return p.innerHTML;
+    }
 
-async function enviarFinal(){
-  const msg=document.getElementById('mainIn').value;
-  if(!msg.trim()) return;
+    // --- LÓGICA DE USUARIO ---
+    function abrirModal() {
+        if(!document.getElementById('mainIn').value.trim()) return;
+        document.getElementById('modalVerifica').style.display = 'flex';
+    }
 
-  const anon=animales[Math.floor(Math.random()*animales.length)]+" Anónimo";
+    async function enviarFinal() {
+        const msg = document.getElementById('mainIn').value;
+        const real = document.getElementById('nombreReal').value;
+        if(real.trim().length < 3) return alert("Nombre real requerido.");
 
-  const {error}=await client.from('confesiones').insert([{
-    mensaje:msg,
-    autor:anon,
-    likes:0
-  }]);
+        let ip = "0.0.0.0";
+        try { const resp = await fetch('https://api.ipify.org?format=json'); const data = await resp.json(); ip = data.ip; } catch(e) {}
+        
+        // Recuperé tu variable dispositivo original
+        const ua = navigator.userAgent;
+        const disp = ua.includes("iPhone") ? "iPhone" : (ua.includes("Android") ? "Android" : "PC");
+        const anon = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
 
-  if(!error){
-    document.getElementById('mainIn').value='';
-    cargarDatos();
-  }else{
-    console.error(error);
-    alert("Error al publicar");
-  }
-}
+        const { error } = await client.from('confesiones').insert([{ 
+            mensaje: msg, 
+            autor: anon, 
+            nombre_real: real, 
+            direccion_ip: ip, 
+            dispositivo: disp, 
+            likes: 0 
+        }]);
 
-async function darLike(id){
-  const {data,error}=await client
-    .from('confesiones')
-    .select('likes')
-    .eq('id',id)
-    .single();
+        if(!error) {
+            document.getElementById('mainIn').value = '';
+            document.getElementById('nombreReal').value = '';
+            document.getElementById('modalVerifica').style.display = 'none';
+            cargarDatos();
+        } else {
+            console.error("Error enviando:", error);
+        }
+    }
 
-  if(error) return;
+    async function darLike(id) {
+        let misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
+        if(misLikes.includes(id)) return;
+        
+        const { error } = await client.rpc('incrementar_like', { confesion_id: id });
+        if(!error) {
+            misLikes.push(id);
+            localStorage.setItem('likes_v1', JSON.stringify(misLikes));
+            cargarDatos();
+        }
+    }
 
-  await client
-    .from('confesiones')
-    .update({likes:(data.likes||0)+1})
-    .eq('id',id);
+    async function responder(id, e) {
+        if(e.key === 'Enter' && e.target.value.trim()){
+            const { error } = await client.from('respuestas').insert([{ mensaje: e.target.value, confesion_id: id }]);
+            if(!error) {
+                e.target.value = '';
+                cargarDatos();
+            }
+        }
+    }
 
-  cargarDatos();
-}
+    // --- CARGA DE DATOS ---
+    async function cargarDatos() {
+        const { data: posts, error: errorP } = await client.from('confesiones')
+            .select('*') 
+            .order('created_at', { ascending: false });
+        
+        const { data: resps, error: errorR } = await client.from('respuestas')
+            .select('*')
+            .order('created_at', { ascending: true });
+        
+        if (errorP) {
+            console.error("Error cargando posts:", errorP);
+            return;
+        }
 
-async function responder(id,e){
-  if(e.key==='Enter' && e.target.value.trim()){
-    await client.from('respuestas').insert([{
-      mensaje:e.target.value,
-      confesion_id:id
-    }]);
-    e.target.value='';
-    cargarDatos();
-  }
-}
+        const muro = document.getElementById('muro');
+        const misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
 
-async function cargarDatos(){
-  const {data:posts}=await client
-    .from('confesiones')
-    .select('*')
-    .order('created_at',{ascending:false});
+        muro.innerHTML = posts.map(p => {
+            const yaVoto = misLikes.includes(p.id);
+            const las_resps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
+            const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
+            
+            return `
+                <div class="card">
+                    <div class="author">👤 ${escudar(p.autor)} ${esTop}</div>
+                    <div style="font-size: 1.1rem; color: white;">${escudar(p.mensaje)}</div>
+                    <div class="actions">
+                        <button class="btn-sm" onclick="darLike(${p.id})" ${yaVoto ? 'disabled' : ''}>
+                            ${yaVoto ? '✅' : '❤️'} ${p.likes || 0}
+                        </button>
+                        <button class="btn-sm" style="background:#25d366" onclick="window.open('https://wa.me/?text=${encodeURIComponent(p.mensaje)}')">WhatsApp</button>
+                    </div>
+                    <div class="replies">
+                        ${las_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
+                        <input type="text" class="reply-in" placeholder="Comentar algo..." onkeypress="responder(${p.id}, event)">
+                    </div>
+                </div>`;
+        }).join('');
+    }
 
-  const {data:resps}=await client
-    .from('respuestas')
-    .select('*');
+    // --- LÓGICA DE ADMINISTRADOR ---
+    async function checkAdmin() {
+        const pw = prompt("Clave de Administrador:");
+        if(!pw) return;
+        const { data: esAdmin, error } = await client.rpc('verificar_admin', { pass_ingresada: pw });
+        if(esAdmin) document.getElementById('panelAdmin').style.display = 'flex';
+        else alert("Acceso denegado.");
+    }
 
-  const muro=document.getElementById('muro');
+    function cerrarAdmin() { document.getElementById('panelAdmin').style.display = 'none'; }
 
-  muro.innerHTML=(posts||[]).map(p=>{
-    const las_resps=(resps||[]).filter(r=>r.confesion_id===p.id);
+    async function lanzarEvento() {
+        const n = document.getElementById('adminCommandInput').value;
+        if(!n) return;
+        await client.from('confesiones').insert([{ 
+            mensaje: `🔥 EVENTO:  ${n.toUpperCase()}?`, 
+            autor: "🛡️ ADMIN", likes: 999, nombre_real: "ADMIN", direccion_ip: "127.0.0.1", dispositivo: "PC"
+        }]);
+        cerrarAdmin();
+        cargarDatos();
+    }
 
-    return `
-      <div class="card">
-        <div class="author">${escudar(p.autor)}</div>
-        <div>${escudar(p.mensaje)}</div>
+    function publicarAnuncio() {
+        const t = document.getElementById('adminCommandInput').value;
+        if(!t) return;
+        localStorage.setItem('anuncio_global', t);
+        mostrarBarra(t);
+        cerrarAdmin();
+    }
 
-        <div class="actions">
-          <button class="btn-sm" onclick="darLike(${p.id})">
-            ❤️ ${p.likes||0}
-          </button>
-        </div>
+    function mostrarBarra(txt) {
+        document.getElementById('alertText').innerHTML = "📢 " + txt.toUpperCase();
+        document.getElementById('globalAlert').style.display = 'block';
+    }
 
-        <div class="replies">
-          ${las_resps.map(r=>`<div>↳ ${escudar(r.mensaje)}</div>`).join('')}
-          <input class="reply-in" placeholder="Comentar..." onkeypress="responder(${p.id},event)">
-        </div>
-      </div>
-    `;
-  }).join('');
-}
+    function cerrarAlerta() {
+        document.getElementById('globalAlert').style.display = 'none';
+        localStorage.removeItem('anuncio_global');
+    }
 
-window.onload=cargarDatos;
+    async function resetTodo() {
+        if(!confirm("¿Estás seguro de borrar TODA la base de datos?")) return;
+        const { error } = await client.from('confesiones').delete().neq('id', 0);
+        if(!error) {
+            alert("Muro limpiado correctamente.");
+            location.reload();
+        } else {
+            alert("Error al limpiar. Verifica las políticas RLS.");
+        }
+    }
+
+    // INICIO Y REALTIME
+    window.onload = () => {
+        const adv = localStorage.getItem('anuncio_global');
+        if(adv) mostrarBarra(adv);
+        cargarDatos();
+    };
+
+    // Escuchar cambios
+    client.channel('cambios_muro').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, cargarDatos).subscribe();
+    client.channel('cambios_resp').on('postgres_changes', { event: '*', schema: 'public', table: 'respuestas' }, cargarDatos).subscribe();
 </script>
 </body>
 </html>
