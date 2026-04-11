@@ -6,8 +6,8 @@
     <title>Confesionario Oficial | Pro Admin</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         :root {
             /* Paleta Dark Premium */
@@ -36,15 +36,16 @@
             flex-direction: column; 
             align-items: center; 
             min-height: 100vh;
+            overflow-x: hidden;
         }
         
-        /* Custom Scrollbar */
+        /* Scrollbar Personalizado */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-        /* Barra de Anuncio Superior */
+        /* Banner de Alerta Global */
         #globalAlert { 
             display:none; 
             background: linear-gradient(90deg, #991b1b, #dc2626); 
@@ -87,13 +88,12 @@
             gap: 8px; 
             margin-bottom: 5px; 
             text-transform: uppercase; 
-            letter-spacing: 0.5px;
         }
         
         .dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
 
-        /* Estilos Glassmorphism compartidos */
+        /* Cajas Glassmorphism */
         .post-box, .card, .modal-card { 
             background: var(--card-glass); 
             backdrop-filter: blur(12px);
@@ -103,7 +103,6 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
         }
 
-        /* Caja de Publicar */
         .post-box { padding: 20px; margin-bottom: 30px; }
         
         textarea { 
@@ -121,11 +120,7 @@
             font-family: inherit; 
             transition: 0.3s ease;
         }
-        textarea:focus {
-            border-color: var(--accent);
-            background: rgba(0,0,0,0.3);
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
-        }
+        textarea:focus { border-color: var(--accent); background: rgba(0,0,0,0.3); }
 
         .btn-post { 
             background: linear-gradient(135deg, #8b5cf6, #6d28d9); 
@@ -134,37 +129,55 @@
             padding: 12px 28px; 
             border-radius: 14px; 
             font-weight: 700; 
-            font-size: 1rem;
             cursor: pointer; 
             float: right; 
             margin-top: 10px;
             transition: all 0.3s ease; 
-            box-shadow: 0 4px 15px var(--accent-glow);
         }
         .btn-post:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
-        .btn-post:active { transform: scale(0.95); }
 
-        /* Estilo de las Confesiones */
+        /* Estilo de Tarjetas de Confesión */
         .card { 
             padding: 22px; 
             margin-bottom: 20px; 
             animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-            text-align: left; 
             width: 100%; 
             box-sizing: border-box; 
-            transition: transform 0.3s ease, border-color 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(255,255,255,0.15);
         }
         
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .author { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge { background: linear-gradient(45deg, #ec4899, #f43f5e); color: white; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px; box-shadow: 0 2px 10px rgba(236, 72, 153, 0.3); }
-        
-        .actions { display: flex; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .author { 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: var(--accent); 
+            margin-bottom: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            flex-wrap: wrap;
+        }
+
+        .badge { 
+            background: linear-gradient(45deg, #ec4899, #f43f5e); 
+            color: white; 
+            font-size: 10px; 
+            font-weight: 800; 
+            padding: 3px 8px; 
+            border-radius: 8px; 
+        }
+
+        .badge-admin { 
+            background: linear-gradient(45deg, #8b5cf6, #3b82f6); 
+        }
+
+        .actions { 
+            display: flex; 
+            gap: 10px; 
+            margin-top: 20px; 
+            padding-top: 15px; 
+            border-top: 1px solid rgba(255,255,255,0.05); 
+        }
         
         .btn-sm { 
             background: rgba(255,255,255,0.05); 
@@ -173,19 +186,17 @@
             padding: 8px 16px; 
             border-radius: 12px; 
             cursor: pointer; 
-            font-size: 0.9rem; 
+            font-size: 0.85rem; 
             font-weight: 600;
-            display: flex; align-items: center; gap: 6px; 
-            transition: 0.2s;
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
         }
-        .btn-sm:hover:not(:disabled) { background: rgba(255,255,255,0.1); transform: scale(1.02); }
-        .btn-sm:disabled { opacity: 0.7; cursor: not-allowed; border-color: var(--success); color: var(--success); background: var(--success-bg); }
+        .btn-sm:disabled { color: var(--success); border-color: var(--success); background: var(--success-bg); }
 
-        /* Respuestas/Comentarios */
-        .replies { margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 16px; padding: 15px; border: 1px solid rgba(255,255,255,0.03); }
-        .reply-txt { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 8px; line-height: 1.4; }
-        .reply-txt:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        
+        /* Comentarios */
+        .replies { margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 16px; padding: 15px; }
+        .reply-txt { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 5px; }
         .reply-in { 
             width: 100%; 
             background: transparent; 
@@ -194,26 +205,45 @@
             border-bottom: 1px solid rgba(255,255,255,0.1); 
             outline: none; 
             font-size: 0.9rem; 
-            margin-top: 10px; 
             padding: 8px 0;
-            transition: 0.3s;
             font-family: inherit;
         }
-        .reply-in:focus { border-bottom-color: var(--accent); }
 
         /* Modales */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); 
+            z-index: 10000; 
+            align-items: center; 
+            justify-content: center; 
+            backdrop-filter: blur(10px); 
+        }
         .modal-card { padding: 35px 25px; width: 85%; max-width: 400px; text-align: center; }
         .modal-card input { 
-            width: 100%; padding: 15px; margin: 15px 0; border-radius: 14px; 
+            width: 100%; padding: 15px; margin: 10px 0; border-radius: 14px; 
             border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); 
-            color: white; box-sizing: border-box; text-align: center; font-size: 1rem;
-            outline: none; transition: 0.3s; font-family: inherit;
+            color: white; box-sizing: border-box; text-align: center; font-family: inherit;
         }
-        .modal-card input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
 
-        /* BOTÓN ADMIN AHORA VISIBLE */
-        #adminTrigger { position:fixed; bottom:20px; left:20px; width:45px; height:45px; background: rgba(24, 24, 27, 0.8); border: 1px solid var(--card-border); border-radius: 50%; color: var(--text-dim); font-size: 20px; display: flex; align-items: center; justify-content: center; cursor:pointer; z-index: 10001; box-shadow: 0 8px 20px rgba(0,0,0,0.4); backdrop-filter: blur(8px); transition: 0.3s; }
+        /* Botón Secreto Admin */
+        #adminTrigger { 
+            position:fixed; 
+            bottom:20px; left:20px; 
+            width:45px; height:45px; 
+            background: rgba(24, 24, 27, 0.8); 
+            border: 1px solid var(--card-border); 
+            border-radius: 50%; 
+            color: var(--text-dim); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor:pointer; 
+            z-index: 10001; 
+            transition: 0.3s;
+        }
         #adminTrigger:hover { color: white; border-color: var(--accent); transform: rotate(45deg); }
     </style>
 </head>
@@ -221,18 +251,18 @@
 
 <div id="globalAlert">
     <span id="alertText">📢 ANUNCIO</span>
-    <button onclick="cerrarAlerta()" style="background:none; border:none; color:white; font-weight:800; cursor:pointer; margin-left:15px; font-size:1.2rem; opacity:0.8; transition:0.2s;">✕</button>
+    <button onclick="cerrarAlerta()" style="background:none; border:none; color:white; font-weight:800; cursor:pointer; margin-left:15px;">✕</button>
 </div>
 
 <div class="container">
     <header>
-        <div class="live"><div class="dot"></div> SISTEMA PROTEGIDO CON RLS</div>
+        <div class="live"><div class="dot"></div> SISTEMA CON RLS ACTIVO</div>
         <h1>🤫 Confesionario</h1>
-        <p style="color: var(--text-dim); font-size: 0.95rem; margin-top: 5px;">Seguro, anónimo y moderado.</p>
+        <p style="color: var(--text-dim); font-size: 0.9rem;">Anónimo, seguro y profesional.</p>
     </header>
 
     <div class="post-box">
-        <textarea id="mainIn" placeholder="¿Qué quieres confesar hoy? Nadie sabrá que fuiste tú..."></textarea>
+        <textarea id="mainIn" placeholder="¿Qué quieres confesar hoy? Nadie sabrá tu identidad..."></textarea>
         <div style="overflow: auto;"><button class="btn-post" onclick="abrirModal()">Publicar</button></div>
     </div>
 
@@ -243,21 +273,36 @@
 <div id="modalVerifica" class="modal-overlay">
     <div class="modal-card">
         <div style="font-size: 3rem; margin-bottom: 10px;">🛡️</div>
-        <h3 style="margin: 0 0 10px 0; font-size: 1.4rem;">Verificación Anti-Fraude</h3>
-        <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5;">Para evitar spam, necesitamos confirmar tu identidad real. <br><strong style="color:var(--text-main);">Solo el sistema la verá, tu publicación será 100% anónima.</strong></p>
-        <input type="text" id="nombreReal" placeholder="Tu nombre y apellido">
-        <button class="btn-post" style="float:none; width:100%; padding: 15px; margin-top: 10px;" onclick="enviarFinal()">Confirmar y Publicar</button>
-        <button class="btn-sm" style="width:100%; justify-content:center; margin-top:15px; background:transparent; border:none; color:var(--text-dim);" onclick="document.getElementById('modalVerifica').style.display='none'">Cancelar</button>
+        <h3>Verificación de Identidad</h3>
+        <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px;">
+            Tu nombre real <b>solo</b> lo verá el sistema para control de calidad. 
+            La publicación será 100% anónima para el público.
+        </p>
+        <input type="text" id="nombreReal" placeholder="Nombre y Apellido">
+        <button class="btn-post" style="float:none; width:100%; padding: 15px;" onclick="enviarFinal()">Confirmar y Publicar</button>
+        <button class="btn-sm" style="width:100%; justify-content:center; margin-top:15px; border:none; background:transparent;" onclick="document.getElementById('modalVerifica').style.display='none'">Cancelar</button>
     </div>
 </div>
 
 <div id="panelAdmin" class="modal-overlay">
-    <div class="modal-card" style="border: 1px solid var(--accent); box-shadow: 0 0 40px var(--accent-glow);">
-        <h3 style="margin-top: 0;">⚙️ Centro de Mando</h3>
-        <input type="text" id="adminCommandInput" placeholder="Mensaje para el anuncio...">
-        <button class="btn-post" style="float:none; width:100%; margin-bottom:12px;" onclick="lanzarEvento()">Lanzar como Post 🔥</button>
-        <button class="btn-post" style="float:none; width:100%; margin-bottom:12px; background:linear-gradient(135deg, #d97706, #b45309);" onclick="publicarAnuncio()">Poner en Barra Roja 📢</button>
-        <button class="btn-post" style="float:none; width:100%; background:linear-gradient(135deg, #dc2626, #991b1b);" onclick="resetTodo()">🔥 VACIAR MURO</button>
+    <div class="modal-card" style="border: 1px solid var(--accent); max-height: 90vh; overflow-y: auto;">
+        <h3 style="margin-top: 0;">⚙️ Centro de Comando</h3>
+        
+        <label style="font-size:0.8rem; color:var(--text-dim);">Acciones de Mensajería</label>
+        <input type="text" id="adminCommandInput" placeholder="Mensaje para anuncio o post...">
+        <button class="btn-post" style="float:none; width:100%; margin-bottom:10px;" onclick="lanzarEvento()">Lanzar Evento 🔥</button>
+        <button class="btn-post" style="float:none; width:100%; background:linear-gradient(135deg, #d97706, #b45309); margin-bottom:20px;" onclick="publicarAnuncio()">Poner en Barra Roja 📢</button>
+        
+        <hr style="border: 0.5px solid var(--card-border); margin: 20px 0;">
+        
+        <h4 style="margin: 0; color: var(--accent);">🏷️ Gestionar Etiquetas (Tags)</h4>
+        <p style="font-size:0.7rem; color:var(--text-dim);">Usa el ID (#) que aparece en el post</p>
+        <input type="number" id="adminPostId" placeholder="ID del post">
+        <input type="text" id="adminTagName" placeholder="Ej: VERIFICADO, FAKE, HOT">
+        <button class="btn-post" style="float:none; width:100%; background: var(--success); margin-bottom:20px;" onclick="aplicarTag()">Aplicar Tag</button>
+
+        <button class="btn-post" style="float:none; width:100%; background: linear-gradient(135deg, #dc2626, #991b1b);" onclick="resetTodo()">🔥 VACIAR MURO</button>
+        
         <button class="btn-sm" style="margin-top:25px; width:100%; justify-content:center;" onclick="cerrarAdmin()">Cerrar Panel</button>
     </div>
 </div>
@@ -287,7 +332,7 @@
     async function enviarFinal() {
         const msg = document.getElementById('mainIn').value;
         const real = document.getElementById('nombreReal').value;
-        if(real.trim().length < 3) return alert("Nombre real requerido.");
+        if(real.trim().length < 3) return alert("Nombre real insuficiente.");
 
         let ip = "0.0.0.0";
         try { const resp = await fetch('https://api.ipify.org?format=json'); const data = await resp.json(); ip = data.ip; } catch(e) {}
@@ -310,15 +355,64 @@
             document.getElementById('nombreReal').value = '';
             document.getElementById('modalVerifica').style.display = 'none';
             cargarDatos();
-        } else {
-            console.error("Error enviando:", error);
         }
+    }
+
+    // --- CARGA DE DATOS Y RENDERIZADO ---
+    async function cargarDatos() {
+        const { data: posts, error: errorP } = await client.from('confesiones')
+            .select('*') 
+            .order('created_at', { ascending: false });
+        
+        const { data: resps } = await client.from('respuestas')
+            .select('*')
+            .order('created_at', { ascending: true });
+        
+        if (errorP) return console.error("Error:", errorP);
+
+        const muro = document.getElementById('muro');
+        const misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
+
+        muro.innerHTML = posts.map(p => {
+            const yaVoto = misLikes.includes(p.id);
+            const las_resps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
+            
+            // Etiquetas lógicas
+            const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
+            const tagAdmin = p.tag_admin ? `<span class="badge badge-admin">✨ ${p.tag_admin.toUpperCase()}</span>` : '';
+            const idBadge = `<span style="font-size:9px; color:var(--text-dim); margin-left:auto;">#${p.id}</span>`;
+            
+            return `
+                <div class="card">
+                    <div class="author">
+                        👤 ${escudar(p.autor)} 
+                        ${esTop} 
+                        ${tagAdmin}
+                        ${idBadge}
+                    </div>
+                    <div style="font-size: 1.15rem; color: white; line-height: 1.5; font-weight: 500;">
+                        ${escudar(p.mensaje)}
+                    </div>
+                    <div class="actions">
+                        <button class="btn-sm" onclick="darLike(${p.id})" ${yaVoto ? 'disabled' : ''}>
+                            ${yaVoto ? '✅' : '❤️'} ${p.likes || 0}
+                        </button>
+                        <button class="btn-sm" style="border-color: #25d366; color: #25d366;" 
+                                onclick="window.open('https://wa.me/?text=${encodeURIComponent(p.mensaje)}')">
+                            WhatsApp
+                        </button>
+                    </div>
+                    <div class="replies">
+                        ${las_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
+                        <input type="text" class="reply-in" placeholder="Añadir comentario..." onkeypress="responder(${p.id}, event)">
+                    </div>
+                </div>`;
+        }).join('');
     }
 
     async function darLike(id) {
         let misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
         if(misLikes.includes(id)) return;
-        
         const { error } = await client.rpc('incrementar_like', { confesion_id: id });
         if(!error) {
             misLikes.push(id);
@@ -330,73 +424,41 @@
     async function responder(id, e) {
         if(e.key === 'Enter' && e.target.value.trim()){
             const { error } = await client.from('respuestas').insert([{ mensaje: e.target.value, confesion_id: id }]);
-            if(!error) {
-                e.target.value = '';
-                cargarDatos();
-            }
+            if(!error) { e.target.value = ''; cargarDatos(); }
         }
     }
 
-    // --- CARGA DE DATOS ---
-    async function cargarDatos() {
-        const { data: posts, error: errorP } = await client.from('confesiones')
-            .select('*') 
-            .order('created_at', { ascending: false });
-        
-        const { data: resps, error: errorR } = await client.from('respuestas')
-            .select('*')
-            .order('created_at', { ascending: true });
-        
-        if (errorP) {
-            console.error("Error cargando posts:", errorP);
-            return;
-        }
-
-        const muro = document.getElementById('muro');
-        const misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
-
-        muro.innerHTML = posts.map(p => {
-            const yaVoto = misLikes.includes(p.id);
-            const las_resps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
-            const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
-            
-            return `
-                <div class="card">
-                    <div class="author">👤 ${escudar(p.autor)} ${esTop}</div>
-                    <div style="font-size: 1.15rem; color: white; line-height: 1.5; font-weight: 500;">${escudar(p.mensaje)}</div>
-                    <div class="actions">
-                        <button class="btn-sm" onclick="darLike(${p.id})" ${yaVoto ? 'disabled' : ''}>
-                            ${yaVoto ? '✅' : '❤️'} ${p.likes || 0}
-                        </button>
-                        <button class="btn-sm" style="border-color: #25d366; color: #25d366;" onclick="window.open('https://wa.me/?text=${encodeURIComponent(p.mensaje)}')">WhatsApp</button>
-                    </div>
-                    <div class="replies">
-                        ${las_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
-                        <input type="text" class="reply-in" placeholder="Comentar algo..." onkeypress="responder(${p.id}, event)">
-                    </div>
-                </div>`;
-        }).join('');
-    }
-
-    // --- LÓGICA DE ADMINISTRADOR ---
+    // --- FUNCIONES DE ADMINISTRADOR ---
     async function checkAdmin() {
-        const pw = prompt("Clave de Administrador:");
+        const pw = prompt("Clave Maestra:");
         if(!pw) return;
-        const { data: esAdmin, error } = await client.rpc('verificar_admin', { pass_ingresada: pw });
+        const { data: esAdmin } = await client.rpc('verificar_admin', { pass_ingresada: pw });
         if(esAdmin) document.getElementById('panelAdmin').style.display = 'flex';
         else alert("Acceso denegado.");
     }
 
     function cerrarAdmin() { document.getElementById('panelAdmin').style.display = 'none'; }
 
+    async function aplicarTag() {
+        const id = document.getElementById('adminPostId').value;
+        const tag = document.getElementById('adminTagName').value;
+        if(!id) return alert("Ingrese ID del post");
+        const { error } = await client.from('confesiones').update({ tag_admin: tag }).eq('id', id);
+        if(!error) { 
+            alert("Etiqueta actualizada.");
+            document.getElementById('adminPostId').value = '';
+            document.getElementById('adminTagName').value = '';
+            cargarDatos(); 
+        }
+    }
+
     async function lanzarEvento() {
         const n = document.getElementById('adminCommandInput').value;
         if(!n) return;
         await client.from('confesiones').insert([{ 
-            mensaje: `🔥 EVENTO:  ${n.toUpperCase()}?`, 
-            autor: "🛡️ ADMIN", likes: 999, nombre_real: "ADMIN", direccion_ip: "127.0.0.1", dispositivo: "PC"
+            mensaje: `🔥 ANUNCIO: ${n.toUpperCase()}`, 
+            autor: "🛡️ SISTEMA", likes: 999, nombre_real: "ADMIN", dispositivo: "PC"
         }]);
-        cerrarAdmin();
         cargarDatos();
     }
 
@@ -405,7 +467,6 @@
         if(!t) return;
         localStorage.setItem('anuncio_global', t);
         mostrarBarra(t);
-        cerrarAdmin();
     }
 
     function mostrarBarra(txt) {
@@ -419,26 +480,17 @@
     }
 
     async function resetTodo() {
-        if(!confirm("¿Estás seguro de borrar TODA la base de datos?")) return;
+        if(!confirm("¿Borrar TODO el muro permanentemente?")) return;
         const { error } = await client.from('confesiones').delete().neq('id', 0);
-        if(!error) {
-            alert("Muro limpiado correctamente.");
-            location.reload();
-        } else {
-            alert("Error al limpiar. Verifica las políticas RLS.");
-        }
+        if(!error) location.reload();
     }
 
-    // INICIO Y REALTIME
+    // INICIALIZACIÓN Y REALTIME
     window.onload = () => {
         const adv = localStorage.getItem('anuncio_global');
         if(adv) mostrarBarra(adv);
         cargarDatos();
     };
 
-    // Escuchar cambios
-    client.channel('cambios_muro').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, cargarDatos).subscribe();
-    client.channel('cambios_resp').on('postgres_changes', { event: '*', schema: 'public', table: 'respuestas' }, cargarDatos).subscribe();
-</script>
-</body>
-</html>
+    // Escucha de cambios en tiempo real
+    client.channel('muro_realtime').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones'
