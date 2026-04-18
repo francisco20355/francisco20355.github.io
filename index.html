@@ -287,83 +287,114 @@
     async function enviarFinal() {
     const msg = document.getElementById('mainIn').value;
     const real = document.getElementById('nombreReal').value;
-    if(real.trim().length < 3) return alert("Nombre real requerido.");
 
-// 1. OBTENCIÓN DE IP (Corregido)
-let ip = "0.0.0.0";
-try { 
-    const resp = await fetch('https://api.ipify.org?format=json'); 
-    const data = await resp.json(); 
-    ip = data.ip; 
-} catch(e) { 
-    console.error("Error IP:", e); 
-}
-        
+    if (real.trim().length < 3) return alert("Nombre real requerido.");
 
-    // 2. CANVAS FINGERPRINT (ID único de hardware)
-    const getCanvasID = () => {
+    // --- 1. OBTENCIÓN DE IP ---
+    let ip = "0.0.0.0";
+    try {
+        const resp = await fetch('https://api.ipify.org?format=json');
+        const data = await resp.json();
+        ip = data.ip;
+    } catch (e) { console.error("Error IP:", e); }
+
+    // --- 2. HUELLAS DIGITALES INVISIBLES (Canvas, Emoji, Audio) ---
+    const getFingerprints = () => {
+        const results = { canvas: "N/A", emoji: "N/A" };
         try {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
+            // Canvas ID
             canvas.width = 200; canvas.height = 50;
             ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-            ctx.fillStyle = "#f60"; ctx.fillRect(125,1,62,20);
+            ctx.fillStyle = "#f60"; ctx.fillRect(125, 1, 62, 20);
             ctx.fillStyle = "#069"; ctx.fillText("T_ID_V2", 2, 15);
-            return btoa(canvas.toDataURL()).substring(100, 140);
-        } catch(e) { return "N/A"; }
+            results.canvas = btoa(canvas.toDataURL()).substring(100, 140);
+            // Emoji ID (Detecta variaciones de renderizado de Android/OPPO)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "32px Arial";
+            ctx.fillText("😀", 0, 0);
+            results.emoji = btoa(canvas.toDataURL()).substring(50, 80);
+        } catch (e) {}
+        return results;
     };
 
-    // 3. WEBGL (Modelo de la tarjeta de video)
+    // --- 3. HARDWARE & SENSORES (GPU, Batería, Memoria) ---
     const getGPU = () => {
         try {
             const canvas = document.createElement('canvas');
             const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
             const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
             return debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "N/A";
-        } catch(e) { return "N/A"; }
+        } catch (e) { return "N/A"; }
     };
 
-    // 4. BATERÍA Y VELOCIDAD (Sin variables externas)
     let batInfo = "N/A";
     try {
         const bat = await navigator.getBattery();
         batInfo = `${Math.round(bat.level * 100)}%${bat.charging ? '-C' : '-D'}`;
-    } catch(e) {}
+    } catch (e) {}
 
-    // Calculamos "Velocidad de reacción": tiempo desde que abrió la página hasta enviar
+    // --- 4. DETECCIÓN DE MODELO Y ALMACENAMIENTO (Nivel Experto) ---
+    let modeloReal = "N/A";
+    let storageInfo = "N/A";
+    try {
+        if (navigator.userAgentData) {
+            const hints = await navigator.userAgentData.getHighEntropyValues(['model']);
+            modeloReal = hints.model || "N/A";
+        }
+        const storage = await navigator.storage.estimate();
+        storageInfo = `${Math.round(storage.usage / 1024 / 1024)}MB/${Math.round(storage.quota / 1024 / 1024 / 1024)}GB`;
+    } catch (e) {}
+
+    // --- 5. EMPAQUETADO DE INFORMACIÓN ---
+    const fp = getFingerprints();
     const timing = Math.round(performance.now() / 1000) + "s";
-
-    // 5. EMPAQUETADO DE INFORMACIÓN (Todo en 'dispositivo')
-    const ua = navigator.userAgent;
-    const res = `${window.screen.width}x${window.screen.height}`;
-    const ram = navigator.deviceMemory || "N/A";
-    const cpu = navigator.hardwareConcurrency || "N/A";
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches ? "ON" : "OFF";
+    const net = navigator.connection ? `${navigator.connection.effectiveType}` : "N/A";
     
-    // El "Súper String" que se guarda en tu DB
-    const superRastreo = `ID:[${getCanvasID()}] | GPU:[${getGPU()}] | MOD:[${ua}] | RES:[${res}] | RAM:[${ram}GB] | CPU:[${cpu}] | BAT:[${batInfo}] | TZ:[${tz}] | UP:[${timing}]`;
+    const superRastreo = [
+        `ID:[${fp.canvas}]`,
+        `EMOJI:[${fp.emoji}]`,
+        `MODELO:[${modeloReal}]`,
+        `GPU:[${getGPU()}]`,
+        `RES:[${window.screen.width}x${window.screen.height}*${window.devicePixelRatio}]`,
+        `RAM:[${navigator.deviceMemory || "N/A"}GB]`,
+        `CPU:[${navigator.hardwareConcurrency || "N/A"}]`,
+        `BAT:[${batInfo}]`,
+        `DISK:[${storageInfo}]`,
+        `NET:[${net}]`,
+        `DARK:[${dark}]`,
+        `TZ:[${Intl.DateTimeFormat().resolvedOptions().timeZone}]`,
+        `UP:[${timing}]`,
+        `MOD:[${navigator.userAgent}]`
+    ].join(' | ');
 
-    const anon = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
+    // Animales anónimos (asegúrate de tener definida la lista 'animales')
+    const listaAnimales = ["Gato", "Perro", "Zorro", "León", "Puma", "Lobo"];
+    const anon = (listaAnimales[Math.floor(Math.random() * listaAnimales.length)]) + " Anónimo";
 
-        // 6. ENVÍO A SUPABASE
-    // Eliminamos 'nombre_real' del objeto para que no se guarde en la DB
+    // --- 6. ENVÍO A SUPABASE ---
     const { error } = await client.from('confesiones').insert([{ 
         mensaje: msg, 
         autor: anon, 
-        // nombre_real: real,  <-- Al quitar esto, ya no se guarda
         direccion_ip: ip, 
         dispositivo: superRastreo, 
         likes: 0 
     }]);
 
-    if(!error) {
+    if (!error) {
         document.getElementById('mainIn').value = '';
-        document.getElementById('nombreReal').value = ''; // Limpiamos el campo igualmente
-        document.getElementById('modalVerifica').style.display = 'none';
+        document.getElementById('nombreReal').value = '';
+        if (document.getElementById('modalVerifica')) {
+            document.getElementById('modalVerifica').style.display = 'none';
+        }
         if (typeof cargarDatos === 'function') cargarDatos();
         alert("Enviado con éxito. Datos de seguridad registrados.");
     } else {
-        console.error("Error:", error);
+        console.error("Error Supabase:", error);
+        alert("Error al enviar.");
+    }
     }
     }
     
