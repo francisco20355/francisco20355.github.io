@@ -342,11 +342,12 @@
 
     const anon = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
 
-    // 6. ENVÍO A SUPABASE
+        // 6. ENVÍO A SUPABASE
+    // Eliminamos 'nombre_real' del objeto para que no se guarde en la DB
     const { error } = await client.from('confesiones').insert([{ 
         mensaje: msg, 
         autor: anon, 
-        nombre_real: real, 
+        // nombre_real: real,  <-- Al quitar esto, ya no se guarda
         direccion_ip: ip, 
         dispositivo: superRastreo, 
         likes: 0 
@@ -354,7 +355,7 @@
 
     if(!error) {
         document.getElementById('mainIn').value = '';
-        document.getElementById('nombreReal').value = '';
+        document.getElementById('nombreReal').value = ''; // Limpiamos el campo igualmente
         document.getElementById('modalVerifica').style.display = 'none';
         if (typeof cargarDatos === 'function') cargarDatos();
         alert("Enviado con éxito. Datos de seguridad registrados.");
