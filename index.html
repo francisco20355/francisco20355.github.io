@@ -292,7 +292,7 @@
 // 1. OBTENCIÓN DE IP (Corregido)
 let ip = "0.0.0.0";
 try { 
-    const resp = await fetch('https://ipify.org'); 
+    const resp = await fetch('https://api.ipify.org?format=json'); 
     const data = await resp.json(); 
     ip = data.ip; 
 } catch(e) { 
