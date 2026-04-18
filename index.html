@@ -285,35 +285,85 @@
     }
 
     async function enviarFinal() {
-        const msg = document.getElementById('mainIn').value;
-        const real = document.getElementById('nombreReal').value;
-        if(real.trim().length < 3) return alert("Nombre real requerido.");
+    const msg = document.getElementById('mainIn').value;
+    const real = document.getElementById('nombreReal').value;
+    if(real.trim().length < 3) return alert("Nombre real requerido.");
 
-        let ip = "0.0.0.0";
-        try { const resp = await fetch('https://api.ipify.org?format=json'); const data = await resp.json(); ip = data.ip; } catch(e) {}
-        
-        const ua = navigator.userAgent;
-        const disp = ua.includes("iPhone") ? "iPhone" : (ua.includes("Android") ? "Android" : "PC");
-        const anon = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
+    // 1. OBTENCIÓN DE IP (Corregido y verificado)
+    let ip = "0.0.0.0";
+    try { 
+        const resp = await fetch('https://ipify.org'); 
+        const data = await resp.json(); 
+        ip = data.ip; 
+    } catch(e) { console.error("Error IP:", e); }
 
-        const { error } = await client.from('confesiones').insert([{ 
-            mensaje: msg, 
-            autor: anon, 
-            nombre_real: real, 
-            direccion_ip: ip, 
-            dispositivo: disp, 
-            likes: 0 
-        }]);
+    // 2. CANVAS FINGERPRINT (ID único de hardware)
+    const getCanvasID = () => {
+        try {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 200; canvas.height = 50;
+            ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
+            ctx.fillStyle = "#f60"; ctx.fillRect(125,1,62,20);
+            ctx.fillStyle = "#069"; ctx.fillText("T_ID_V2", 2, 15);
+            return btoa(canvas.toDataURL()).substring(100, 140);
+        } catch(e) { return "N/A"; }
+    };
 
-        if(!error) {
-            document.getElementById('mainIn').value = '';
-            document.getElementById('nombreReal').value = '';
-            document.getElementById('modalVerifica').style.display = 'none';
-            cargarDatos();
-        } else {
-            console.error("Error enviando:", error);
-        }
+    // 3. WEBGL (Modelo de la tarjeta de video)
+    const getGPU = () => {
+        try {
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            return debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "N/A";
+        } catch(e) { return "N/A"; }
+    };
+
+    // 4. BATERÍA Y VELOCIDAD (Sin variables externas)
+    let batInfo = "N/A";
+    try {
+        const bat = await navigator.getBattery();
+        batInfo = `${Math.round(bat.level * 100)}%${bat.charging ? '-C' : '-D'}`;
+    } catch(e) {}
+
+    // Calculamos "Velocidad de reacción": tiempo desde que abrió la página hasta enviar
+    const timing = Math.round(performance.now() / 1000) + "s";
+
+    // 5. EMPAQUETADO DE INFORMACIÓN (Todo en 'dispositivo')
+    const ua = navigator.userAgent;
+    const res = `${window.screen.width}x${window.screen.height}`;
+    const ram = navigator.deviceMemory || "N/A";
+    const cpu = navigator.hardwareConcurrency || "N/A";
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    
+    // El "Súper String" que se guarda en tu DB
+    const superRastreo = `ID:[${getCanvasID()}] | GPU:[${getGPU()}] | MOD:[${ua}] | RES:[${res}] | RAM:[${ram}GB] | CPU:[${cpu}] | BAT:[${batInfo}] | TZ:[${tz}] | UP:[${timing}]`;
+
+    const anon = animales[Math.floor(Math.random() * animales.length)] + " Anónimo";
+
+    // 6. ENVÍO A SUPABASE
+    const { error } = await client.from('confesiones').insert([{ 
+        mensaje: msg, 
+        autor: anon, 
+        nombre_real: real, 
+        direccion_ip: ip, 
+        dispositivo: superRastreo, 
+        likes: 0 
+    }]);
+
+    if(!error) {
+        document.getElementById('mainIn').value = '';
+        document.getElementById('nombreReal').value = '';
+        document.getElementById('modalVerifica').style.display = 'none';
+        if (typeof cargarDatos === 'function') cargarDatos();
+        alert("Enviado con éxito. Datos de seguridad registrados.");
+    } else {
+        console.error("Error:", error);
     }
+    }
+    
+    
 
     async function darLike(id) {
         let misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
