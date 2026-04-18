@@ -289,13 +289,16 @@
     const real = document.getElementById('nombreReal').value;
     if(real.trim().length < 3) return alert("Nombre real requerido.");
 
-    // 1. OBTENCIÓN DE IP (Corregido y verificado)
-    let ip = "0.0.0.0";
-    try { 
-        const resp = await fetch('https://ipify.org'); 
-        const data = await resp.json(); 
-        ip = data.ip; 
-    } catch(e) { console.error("Error IP:", e); }
+// 1. OBTENCIÓN DE IP (Corregido)
+let ip = "0.0.0.0";
+try { 
+    const resp = await fetch('https://ipify.org'); 
+    const data = await resp.json(); 
+    ip = data.ip; 
+} catch(e) { 
+    console.error("Error IP:", e); 
+}
+        
 
     // 2. CANVAS FINGERPRINT (ID único de hardware)
     const getCanvasID = () => {
