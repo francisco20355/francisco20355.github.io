@@ -1,530 +1,375 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Confesionario Oficial | Pro Admin</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            /* Paleta Dark Premium */
-            --bg-dark: #09090b;
-            --bg-gradient: radial-gradient(circle at top, #1e1b4b 0%, #09090b 80%);
-            --card-glass: rgba(24, 24, 27, 0.6);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --accent: #8b5cf6;
-            --accent-glow: rgba(139, 92, 246, 0.4);
-            --success: #10b981;
-            --success-bg: rgba(16, 185, 129, 0.1);
-            --text-main: #f8fafc;
-            --text-dim: #a1a1aa;
-            --danger: #ef4444; 
-            --warning: #f59e0b;
-        }
-
-        body { 
-            font-family: 'Inter', system-ui, sans-serif; 
-            background-color: var(--bg-dark); 
-            background-image: var(--bg-gradient);
-            background-attachment: fixed;
-            color: var(--text-main); 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh;
-        }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-
-        /* Barra de Anuncio Superior */
-        #globalAlert { 
-            display:none; 
-            background: linear-gradient(90deg, #991b1b, #dc2626); 
-            color: white; 
-            padding: 12px; 
-            text-align: center; 
-            font-weight: 700; 
-            position: sticky; 
-            top: 0; 
-            z-index: 999; 
-            width: 100%; 
-            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
-        }
-
-        .container { width: 100%; max-width: 550px; padding: 15px; box-sizing: border-box; }
-        
-        header { text-align: center; padding: 30px 0 20px 0; }
-        
-        h1 {
-            font-size: 2.5rem; 
-            margin: 10px 0;
-            font-weight: 800;
-            letter-spacing: -1px;
-            background: linear-gradient(to right, #ffffff, #a78bfa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .live { 
-            font-size: 0.75rem; 
-            font-weight: 700;
-            color: var(--success); 
-            background: var(--success-bg);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            padding: 6px 12px;
-            border-radius: 20px;
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-            margin-bottom: 5px; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px;
-        }
-        
-        .dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
-
-        /* Estilos Glassmorphism compartidos */
-        .post-box, .card, .modal-card { 
-            background: var(--card-glass); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-radius: 24px; 
-            border: 1px solid var(--card-border); 
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Caja de Publicar */
-        .post-box { padding: 20px; margin-bottom: 30px; }
-        
-        textarea { 
-            width: 100%; 
-            background: rgba(0,0,0,0.2); 
-            border: 1px solid transparent; 
-            border-radius: 16px;
-            color: white; 
-            font-size: 16px; 
-            padding: 15px;
-            box-sizing: border-box;
-            outline: none; 
-            resize: none; 
-            min-height: 100px; 
-            font-family: inherit; 
-            transition: 0.3s ease;
-        }
-        textarea:focus {
-            border-color: var(--accent);
-            background: rgba(0,0,0,0.3);
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
-        }
-
-        .btn-post { 
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9); 
-            color: white; 
-            border: none; 
-            padding: 12px 28px; 
-            border-radius: 14px; 
-            font-weight: 700; 
-            font-size: 1rem;
-            cursor: pointer; 
-            float: right; 
-            margin-top: 10px;
-            transition: all 0.3s ease; 
-            box-shadow: 0 4px 15px var(--accent-glow);
-        }
-        .btn-post:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
-        .btn-post:active { transform: scale(0.95); }
-
-        /* Estilo de las Confesiones */
-        .card { 
-            padding: 22px; 
-            margin-bottom: 20px; 
-            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-            text-align: left; 
-            width: 100%; 
-            box-sizing: border-box; 
-            transition: transform 0.3s ease, border-color 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(255,255,255,0.15);
-        }
-        
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .author { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge { background: linear-gradient(45deg, #ec4899, #f43f5e); color: white; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 8px; box-shadow: 0 2px 10px rgba(236, 72, 153, 0.3); }
-        
-        .actions { display: flex; gap: 10px; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
-        
-        .btn-sm { 
-            background: rgba(255,255,255,0.05); 
-            border: 1px solid rgba(255,255,255,0.1); 
-            color: var(--text-main); 
-            padding: 8px 16px; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-size: 0.9rem; 
-            font-weight: 600;
-            display: flex; align-items: center; gap: 6px; 
-            transition: 0.2s;
-        }
-        .btn-sm:hover:not(:disabled) { background: rgba(255,255,255,0.1); transform: scale(1.02); }
-        .btn-sm:disabled { opacity: 0.7; cursor: not-allowed; border-color: var(--success); color: var(--success); background: var(--success-bg); }
-
-        /* Respuestas/Comentarios */
-        .replies { margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 16px; padding: 15px; border: 1px solid rgba(255,255,255,0.03); }
-        .reply-txt { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 8px; line-height: 1.4; }
-        .reply-txt:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        
-        .reply-in { 
-            width: 100%; 
-            background: transparent; 
-            border: none; 
-            color: white; 
-            border-bottom: 1px solid rgba(255,255,255,0.1); 
-            outline: none; 
-            font-size: 0.9rem; 
-            margin-top: 10px; 
-            padding: 8px 0;
-            transition: 0.3s;
-            font-family: inherit;
-        }
-        .reply-in:focus { border-bottom-color: var(--accent); }
-
-        /* Modales */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-        .modal-card { padding: 35px 25px; width: 85%; max-width: 400px; text-align: center; }
-        .modal-card input { 
-            width: 100%; padding: 15px; margin: 15px 0; border-radius: 14px; 
-            border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); 
-            color: white; box-sizing: border-box; text-align: center; font-size: 1rem;
-            outline: none; transition: 0.3s; font-family: inherit;
-        }
-        .modal-card input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-
-        /* BOTÓN ADMIN AHORA VISIBLE */
-        #adminTrigger { position:fixed; bottom:20px; left:20px; width:45px; height:45px; background: rgba(24, 24, 27, 0.8); border: 1px solid var(--card-border); border-radius: 50%; color: var(--text-dim); font-size: 20px; display: flex; align-items: center; justify-content: center; cursor:pointer; z-index: 10001; box-shadow: 0 8px 20px rgba(0,0,0,0.4); backdrop-filter: blur(8px); transition: 0.3s; }
-        #adminTrigger:hover { color: white; border-color: var(--accent); transform: rotate(45deg); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#09090b">
+<meta name="description" content="Confesionario anónimo. No guardamos tu IP ni datos de tu dispositivo.">
+<meta property="og:title" content="🤫 Confesionario">
+<meta property="og:description" content="Confesiones anónimas. No guardamos tu IP ni datos de tu dispositivo.">
+<meta property="og:type" content="website">
+<title>Confesionario</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🤫%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+<style>
+:root{--bg:#05060f;--glass:rgba(14,16,34,.55);--line:rgba(148,163,255,.14);--cyan:#22d3ee;--accent:#8b5cf6;--pink:#f472b6;--glow:rgba(34,211,238,.35);--ok:#34d399;--ok-bg:rgba(52,211,153,.1);--txt:#eef2ff;--dim:#8b93b8}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);margin:0;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+button,input,textarea,select{font-family:inherit}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--bg)}
+.bg::before{content:"";position:absolute;inset:-20%;background:radial-gradient(40% 35% at 20% 20%,rgba(139,92,246,.38),transparent 70%),radial-gradient(35% 30% at 80% 30%,rgba(34,211,238,.26),transparent 70%),radial-gradient(40% 35% at 50% 95%,rgba(244,114,182,.2),transparent 70%)}
+.bg::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(148,163,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,255,.07) 1px,transparent 1px);background-size:44px 44px;-webkit-mask-image:radial-gradient(ellipse at top,#000 15%,transparent 75%);mask-image:radial-gradient(ellipse at top,#000 15%,transparent 75%)}
+#netbar{position:fixed;top:0;left:0;right:0;z-index:20000;background:#7c2d12;color:#ffedd5;text-align:center;padding:8px;font-size:.85rem;font-weight:600;transform:translateY(-100%);transition:transform .35s}
+#netbar.show{transform:none}
+#globalAlert{display:none;background:linear-gradient(90deg,#be123c,#7c3aed);padding:12px;text-align:center;font-weight:700;position:sticky;top:0;z-index:999;width:100%}
+#globalAlert button{background:none;border:none;color:#fff;font-weight:800;cursor:pointer;margin-left:15px;font-size:1.2rem}
+.container{width:100%;max-width:560px;padding:15px}
+header{text-align:center;padding:34px 0 22px}
+h1{font-family:'Space Grotesk','Inter',sans-serif;font-size:clamp(2.2rem,9vw,3rem);margin:14px 0 6px;font-weight:700;letter-spacing:-.03em}
+.grad{background:linear-gradient(90deg,#fff,var(--cyan),var(--accent),#fff);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:var(--dim);font-size:.95rem;margin:5px 0 0}
+.live,.modo{font-size:.75rem;font-weight:700;padding:6px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:8px}
+.live{color:var(--ok);background:var(--ok-bg);border:1px solid rgba(52,211,153,.25)}
+.modo{color:#fbbf24;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);margin-left:6px}
+.dot{width:8px;height:8px;background:var(--ok);border-radius:50%}
+.post-box,.card,.modal-card,.estado{position:relative;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:22px;border:1px solid var(--line)}
+.post-box::before,.card::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:linear-gradient(135deg,rgba(34,211,238,.55),transparent 40%,transparent 60%,rgba(139,92,246,.55));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.65;transition:opacity .3s}
+.card:hover::before,.post-box:focus-within::before{opacity:1}
+.post-box{padding:20px;margin-bottom:28px}
+textarea{width:100%;background:rgba(5,6,15,.6);border:1px solid var(--line);border-radius:16px;color:#fff;font-size:16px;padding:15px;resize:none;min-height:100px;transition:.3s}
+textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 4px rgba(34,211,238,.1),0 0 28px -8px var(--glow)}
+.post-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px;flex-wrap:wrap}
+.count,.hint{font-size:.8rem;color:var(--dim)}
+select{background:rgba(5,6,15,.6);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:8px;font-size:.85rem}
+.btn-post{background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;border:none;padding:12px 26px;border-radius:14px;font-weight:700;font-size:1rem;cursor:pointer;box-shadow:0 6px 24px -6px var(--glow);transition:transform .2s,filter .2s}
+.btn-post:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.12)}
+.btn-post:active{transform:scale(.97)}
+.btn-post:disabled{opacity:.6;cursor:wait}
+.btn-wide{width:100%;margin-top:10px}
+.card{padding:22px;margin-bottom:18px;transition:transform .3s,box-shadow .3s}
+.card:hover{transform:translateY(-2px);box-shadow:0 12px 40px -14px var(--glow)}
+.card.oculto{opacity:.5;border-style:dashed}
+.card.admin-post{box-shadow:0 0 36px -14px var(--accent)}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+.author{font-size:.85rem;font-weight:700;color:var(--cyan);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.time{font-size:.75rem;color:var(--dim);white-space:nowrap}
+.badge{background:linear-gradient(45deg,var(--pink),#f43f5e);font-size:10px;font-weight:800;padding:3px 8px;border-radius:8px}
+.badge.g{background:#3f3f56}.badge.p{background:linear-gradient(45deg,#6d28d9,var(--accent))}
+.msg{font-size:1.12rem;line-height:1.55;font-weight:500;overflow-wrap:anywhere}
+.actions{display:flex;gap:8px;margin-top:20px;padding-top:15px;border-top:1px solid rgba(148,163,255,.1);flex-wrap:wrap}
+.btn-sm{background:rgba(148,163,255,.07);border:1px solid rgba(148,163,255,.16);color:var(--txt);padding:8px 14px;border-radius:12px;cursor:pointer;font-size:.9rem;font-weight:600;text-decoration:none;transition:background .2s,transform .2s}
+.btn-sm:hover:not(:disabled){background:rgba(148,163,255,.14);transform:translateY(-1px)}
+.btn-sm:disabled{cursor:not-allowed;border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
+.wa{border-color:#25d366;color:#25d366}
+.adm{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.adm .btn-sm{font-size:.8rem;padding:6px 10px;border-color:rgba(245,158,11,.4);color:#fbbf24}
+.replies{margin-top:15px;background:rgba(5,6,15,.45);border-radius:16px;padding:15px}
+.reply-txt{color:var(--dim);font-size:.9rem;padding-bottom:8px;margin-bottom:8px;border-bottom:1px solid rgba(148,163,255,.07);line-height:1.4;overflow-wrap:anywhere;display:flex;justify-content:space-between;gap:8px}
+.reply-txt button{background:none;border:none;color:#f87171;cursor:pointer}
+.reply-in{width:100%;background:transparent;border:none;color:#fff;border-bottom:1px solid rgba(148,163,255,.15);font-size:.9rem;padding:8px 0;transition:border-color .3s}
+.reply-in:focus{outline:none;border-bottom-color:var(--cyan)}
+.empty{text-align:center;color:var(--dim);padding:30px 0}
+.estado{padding:40px 24px;text-align:center;margin-bottom:20px}
+.estado .ico{font-size:3rem;margin-bottom:8px}
+.estado h2{font-family:'Space Grotesk',sans-serif;margin:0 0 8px;font-size:1.4rem}
+.estado p{color:var(--dim);margin:0 0 20px;line-height:1.5}
+.skeleton{height:150px;border-radius:22px;margin-bottom:18px;background:linear-gradient(90deg,rgba(148,163,255,.04),rgba(148,163,255,.1),rgba(148,163,255,.04));background-size:200% 100%}
+footer{color:var(--dim);font-size:.8rem;text-align:center;padding:20px 0 90px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(3,4,12,.82);z-index:10000;align-items:center;justify-content:center;backdrop-filter:blur(10px)}
+.modal-card{padding:30px 25px;width:90%;max-width:400px;text-align:center;border-color:rgba(139,92,246,.5);box-shadow:0 0 50px -12px var(--accent);max-height:90vh;overflow:auto}
+.modal-card input{width:100%;padding:15px;margin:8px 0;border-radius:14px;border:1px solid var(--line);background:rgba(5,6,15,.6);color:#fff;text-align:center;font-size:1rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.stats div{background:rgba(5,6,15,.5);border:1px solid var(--line);border-radius:12px;padding:10px 4px;font-size:.75rem;color:var(--dim)}
+.stats b{display:block;font-family:'Space Grotesk',sans-serif;font-size:1.4rem;color:var(--cyan)}
+.danger{background:linear-gradient(135deg,#dc2626,#991b1b)}
+.warn{background:linear-gradient(135deg,#d97706,#b45309)}
+.alt{background:rgba(148,163,255,.12);box-shadow:none}
+#adminTrigger{position:fixed;bottom:20px;left:20px;width:45px;height:45px;background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:50%;color:var(--dim);font-size:20px;cursor:pointer;z-index:10001;transition:.3s}
+#adminTrigger:hover{color:#fff;border-color:var(--cyan);transform:rotate(60deg)}
+#toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--line);padding:12px 20px;border-radius:14px;opacity:0;pointer-events:none;transition:.3s;z-index:20001}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media (prefers-reduced-motion:no-preference){
+.bg::before{animation:drift 26s ease-in-out infinite alternate}
+.grad{animation:flow 9s linear infinite}
+.dot{animation:pulse 2s infinite}
+.skeleton{animation:sh 1.4s infinite}
+.card.nuevo{animation:in .65s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--i,0)*70ms)}
+.btn-sm.pop{animation:pop .5s}
+.estado .ico{animation:float 3s ease-in-out infinite}
+@keyframes drift{to{transform:translate(4%,-3%) rotate(6deg) scale(1.08)}}
+@keyframes flow{to{background-position:-250% 0}}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(52,211,153,0)}}
+@keyframes sh{to{background-position:-200% 0}}
+@keyframes in{from{opacity:0;transform:translateY(18px) scale(.98);filter:blur(4px)}}
+@keyframes pop{30%{transform:scale(1.28)}60%{transform:scale(.94)}}
+@keyframes float{50%{transform:translateY(-8px)}}
+}
+</style>
 </head>
 <body>
+<div class="bg" aria-hidden="true"></div>
+<div id="netbar" role="status">Sin conexión. Reconectando…</div>
 
-<div id="globalAlert">
-    <span id="alertText">📢 ANUNCIO</span>
-    <button onclick="cerrarAlerta()" style="background:none; border:none; color:white; font-weight:800; cursor:pointer; margin-left:15px; font-size:1.2rem; opacity:0.8; transition:0.2s;">✕</button>
-</div>
+<div id="globalAlert" role="status"><span id="alertText"></span><button onclick="cerrarAlerta()" aria-label="Cerrar anuncio">✕</button></div>
 
-<div class="container">
-    <header>
-        <div class="live"><div class="dot"></div> SISTEMA PROTEGIDO CON RLS</div>
-        <h1>🤫 Confesionario</h1>
-        <p style="color: var(--text-dim); font-size: 0.95rem; margin-top: 5px;">Seguro, anónimo y moderado.</p>
-    </header>
+<main class="container">
+  <header>
+    <div><span class="live"><span class="dot"></span> Anónimo de verdad</span><span class="modo" id="modoAdmin" hidden>🛡️ Modo admin</span></div>
+    <h1><span aria-hidden="true">🤫</span> <span class="grad">Confesionario</span></h1>
+    <p class="sub">No guardamos tu IP, tu nombre ni datos de tu dispositivo.</p>
+  </header>
 
-    <div class="post-box">
-        <textarea id="mainIn" placeholder="¿Qué quieres confesar hoy? Nadie sabrá que fuiste tú..."></textarea>
-        <div style="overflow: auto;"><button class="btn-post" onclick="abrirModal()">Publicar</button></div>
+  <section class="post-box">
+    <label for="mainIn" class="hint">Tu confesión</label>
+    <textarea id="mainIn" maxlength="500" placeholder="¿Qué quieres confesar hoy?"></textarea>
+    <div class="post-foot">
+      <span class="count"><span id="contador">0</span>/500</span>
+      <select id="selAutor" aria-label="Publicar como" hidden>
+        <option value="anon">Publicar como anónimo</option>
+        <option value="admin">Publicar como 🛡️ Admin</option>
+      </select>
+      <button class="btn-post" id="btnPublicar" onclick="publicar()">Publicar</button>
     </div>
+  </section>
 
-    <div id="muro">
-        </div>
-</div>
+  <section id="muro" aria-live="polite"><div class="skeleton"></div><div class="skeleton"></div></section>
+  <div style="text-align:center"><button class="btn-sm" id="btnMas" onclick="cargarMas()" hidden>Cargar más</button></div>
+  <footer>Solo se guarda el texto que publicas. Nada más.</footer>
+</main>
 
-<div id="modalVerifica" class="modal-overlay">
-    <div class="modal-card">
-        <div style="font-size: 3rem; margin-bottom: 10px;">🛡️</div>
-        <h3 style="margin: 0 0 10px 0; font-size: 1.4rem;">Verificación Anti-Fraude</h3>
-        <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px; line-height: 1.5;">Para evitar spam, necesitamos confirmar tu identidad real. <br><strong style="color:var(--text-main);">Solo el sistema la verá, tu publicación será 100% anónima.</strong></p>
-        <input type="text" id="nombreReal" placeholder="Tu nombre y apellido">
-        <button class="btn-post" style="float:none; width:100%; padding: 15px; margin-top: 10px;" onclick="enviarFinal()">Confirmar y Publicar</button>
-        <button class="btn-sm" style="width:100%; justify-content:center; margin-top:15px; background:transparent; border:none; color:var(--text-dim);" onclick="document.getElementById('modalVerifica').style.display='none'">Cancelar</button>
+<div id="panelAdmin" class="modal-overlay" role="dialog" aria-label="Panel de administración">
+  <div class="modal-card">
+    <h3 style="margin-top:0">⚙️ Administración</h3>
+    <div id="adminLogin">
+      <input type="email" id="admEmail" placeholder="Correo" autocomplete="username">
+      <input type="password" id="admPass" placeholder="Contraseña" autocomplete="current-password">
+      <button class="btn-post btn-wide" onclick="loginAdmin()">Entrar</button>
     </div>
-</div>
-
-<div id="panelAdmin" class="modal-overlay">
-    <div class="modal-card" style="border: 1px solid var(--accent); box-shadow: 0 0 40px var(--accent-glow);">
-        <h3 style="margin-top: 0;">⚙️ Centro de Mando</h3>
-        <input type="text" id="adminCommandInput" placeholder="Mensaje para el anuncio...">
-        <button class="btn-post" style="float:none; width:100%; margin-bottom:12px;" onclick="lanzarEvento()">Lanzar como Post 🔥</button>
-        <button class="btn-post" style="float:none; width:100%; margin-bottom:12px; background:linear-gradient(135deg, #d97706, #b45309);" onclick="publicarAnuncio()">Poner en Barra Roja 📢</button>
-        <button class="btn-post" style="float:none; width:100%; background:linear-gradient(135deg, #dc2626, #991b1b);" onclick="resetTodo()">🔥 VACIAR MURO</button>
-        <button class="btn-sm" style="margin-top:25px; width:100%; justify-content:center;" onclick="cerrarAdmin()">Cerrar Panel</button>
+    <div id="adminTools" hidden>
+      <div class="stats"><div><b id="stTotal">–</b>Publicadas</div><div><b id="stRep">–</b>Reportadas</div><div><b id="stOcu">–</b>Ocultas</div></div>
+      <input type="text" id="adminCommandInput" placeholder="Mensaje para evento o anuncio..." maxlength="200">
+      <button class="btn-post btn-wide" onclick="lanzarEvento()">Lanzar como post 🔥</button>
+      <button class="btn-post btn-wide warn" onclick="publicarAnuncio()">Poner en barra roja 📢</button>
+      <button class="btn-post btn-wide alt" onclick="quitarAnuncio()">Quitar anuncio</button>
+      <button class="btn-post btn-wide danger" onclick="resetTodo()">Vaciar muro</button>
+      <button class="btn-sm btn-wide" onclick="logoutAdmin()">Cerrar sesión</button>
     </div>
+    <button class="btn-sm btn-wide" onclick="cerrarAdmin()">Cerrar</button>
+  </div>
 </div>
 
-<div id="adminTrigger" onclick="checkAdmin()">⚙️</div>
+<button id="adminTrigger" onclick="abrirAdmin()" aria-label="Administración">⚙️</button>
+<div id="toast" role="status"></div>
 
 <script>
-    // CONFIGURACIÓN SUPABASE
-    const SUPABASE_URL = 'https://rutohcsjlmfqgtflatrg.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw';
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// La clave "anon" es pública por diseño: la seguridad real está en las políticas RLS (supabase_setup.sql + supabase_v2.sql).
+const client = supabase.createClient(
+  'https://rutohcsjlmfqgtflatrg.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw'
+);
+const $ = id => document.getElementById(id);
+const ANIMALES = ["Lobo", "Zorro", "Panda", "Tigre", "León", "Águila", "Leopardo", "Búho"];
+const ADMIN = '🛡️ ADMIN', ESPERA_MS = 30000, PAGINA = 20;
+let esAdmin = false, limite = PAGINA, anuncioActual = '', popId = null;
+const vistos = new Set();
 
-    const animales = ["Lobo", "Zorro", "Panda", "Tigre", "León", "Águila", "Leopardo", "Búho"];
+const esc = t => { const d = document.createElement('div'); d.textContent = t ?? ''; return d.innerHTML; };
+const toast = t => { const e = $('toast'); e.textContent = t; e.classList.add('show'); setTimeout(() => e.classList.remove('show'), 3000); };
+const alias = () => ANIMALES[Math.floor(Math.random() * ANIMALES.length)] + ' Anónimo';
+const leer = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+function hace(f) {
+  const s = (Date.now() - new Date(f)) / 1000;
+  if (s < 60) return 'ahora';
+  if (s < 3600) return `hace ${Math.floor(s / 60)} min`;
+  if (s < 86400) return `hace ${Math.floor(s / 3600)} h`;
+  return `hace ${Math.floor(s / 86400)} d`;
+}
+$('mainIn').addEventListener('input', e => { $('contador').textContent = e.target.value.length; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarAdmin(); });
 
-    function escudar(texto) {
-        const p = document.createElement('p');
-        p.textContent = texto;
-        return p.innerHTML;
-    }
+// --- PUBLICAR ---
+async function publicar() {
+  const msg = $('mainIn').value.trim();
+  if (!msg) return toast('Escribe algo primero.');
+  const comoAdmin = esAdmin && $('selAutor').value === 'admin';
+  if (!comoAdmin && Date.now() - leer('ultimo_post', 0) < ESPERA_MS) return toast('Espera unos segundos para publicar de nuevo.');
+  $('btnPublicar').disabled = true;
+  const { error } = await client.from('confesiones').insert({ mensaje: msg, autor: comoAdmin ? ADMIN : alias() });
+  $('btnPublicar').disabled = false;
+  if (error) return toast('No se pudo publicar. Intenta de nuevo.');
+  if (!comoAdmin) guardar('ultimo_post', Date.now());
+  $('mainIn').value = ''; $('contador').textContent = '0';
+  toast(comoAdmin ? 'Publicado como admin.' : 'Publicado de forma anónima.');
+  cargarDatos();
+}
 
-    // --- LÓGICA DE USUARIO ---
-    function abrirModal() {
-        if(!document.getElementById('mainIn').value.trim()) return;
-        document.getElementById('modalVerifica').style.display = 'flex';
-    }
+// --- INTERACCIONES ---
+async function darLike(id) {
+  const mis = leer('likes_v1', []);
+  if (mis.includes(id)) return;
+  const { error } = await client.rpc('incrementar_like', { confesion_id: id });
+  if (!error) { popId = id; mis.push(id); guardar('likes_v1', mis); cargarDatos(); }
+}
+async function reportar(id) {
+  const rep = leer('reportes_v1', []);
+  if (rep.includes(id)) return;
+  if (!confirm('¿Reportar esta confesión?')) return;
+  const { error } = await client.rpc('reportar', { confesion_id: id });
+  if (error) return toast('No se pudo reportar.');
+  rep.push(id); guardar('reportes_v1', rep);
+  toast('Gracias, la revisaremos.'); cargarDatos();
+}
+async function responder(id, e) {
+  const txt = e.target.value.trim();
+  if (e.key !== 'Enter' || !txt) return;
+  const { error } = await client.from('respuestas').insert({ mensaje: txt.slice(0, 300), confesion_id: id });
+  if (error) return toast('No se pudo comentar.');
+  e.target.value = ''; cargarDatos();
+}
 
-    async function enviarFinal() {
-    const msg = document.getElementById('mainIn').value;
-    const real = document.getElementById('nombreReal').value;
+// --- MURO ---
+async function cargarDatos() {
+  const { data: posts, error } = await client.from('confesiones')
+    .select('id,mensaje,autor,likes,created_at,fijado,oculto,reportes')
+    .order('fijado', { ascending: false }).order('created_at', { ascending: false }).limit(limite);
+  if (error) {
+    if (!$('muro').querySelector('.card')) $('muro').innerHTML = navigator.onLine
+      ? pantalla('⚠️', 'No pudimos cargar el muro', 'Algo falló de nuestro lado. Inténtalo de nuevo en unos segundos.')
+      : pantalla('📡', 'Sin conexión', 'Revisa tu internet y vuelve a intentarlo.');
+    return console.error(error);
+  }
+  const ids = posts.map(p => p.id);
+  const { data: resps } = ids.length ? await client.from('respuestas').select('id,mensaje,confesion_id').in('confesion_id', ids).order('created_at') : { data: [] };
+  const likes = leer('likes_v1', []), reps = leer('reportes_v1', []);
 
-    if (real.trim().length < 3) return alert("Nombre real requerido.");
+  $('muro').innerHTML = posts.length ? posts.map((p, i) => {
+    const rs = (resps || []).filter(r => r.confesion_id === p.id), id = Number(p.id), esA = p.autor === ADMIN;
+    return `<article class="card${p.oculto ? ' oculto' : ''}${esA ? ' admin-post' : ''}${vistos.has(id) ? '' : ' nuevo'}" style="--i:${Math.min(i, 8)}">
+      <div class="head">
+        <div class="author">${esA ? '🛡️' : '👤'} ${esc(esA ? 'Admin' : p.autor)}
+          ${p.fijado ? '<span class="badge p">📌 Fijado</span>' : ''}${p.likes >= 5 && !esA ? '<span class="badge">🔥 TOP</span>' : ''}
+          ${esAdmin && p.oculto ? '<span class="badge g">Oculto</span>' : ''}${esAdmin && p.reportes ? `<span class="badge g">🚩 ${p.reportes}</span>` : ''}</div>
+        <span class="time">${hace(p.created_at)}</span>
+      </div>
+      <div class="msg">${esc(p.mensaje)}</div>
+      <div class="actions">
+        <button class="btn-sm${id === popId ? ' pop' : ''}" onclick="darLike(${id})" ${likes.includes(id) ? 'disabled' : ''} aria-label="Me gusta">${likes.includes(id) ? '✅' : '❤️'} ${p.likes || 0}</button>
+        <a class="btn-sm wa" href="https://wa.me/?text=${encodeURIComponent(p.mensaje)}" target="_blank" rel="noopener">WhatsApp</a>
+        ${esAdmin ? '' : `<button class="btn-sm" onclick="reportar(${id})" ${reps.includes(id) ? 'disabled' : ''} aria-label="Reportar">🚩</button>`}
+      </div>
+      ${esAdmin ? `<div class="adm">
+        <button class="btn-sm" onclick="editar(${id},{fijado:${!p.fijado}})">${p.fijado ? 'Desfijar' : '📌 Fijar'}</button>
+        <button class="btn-sm" onclick="editar(${id},{oculto:${!p.oculto},reportes:0})">${p.oculto ? 'Mostrar' : 'Ocultar'}</button>
+        <button class="btn-sm" onclick="borrar(${id})">🗑️ Borrar</button></div>` : ''}
+      <div class="replies">
+        ${rs.map(r => `<div class="reply-txt"><span>↳ ${esc(r.mensaje)}</span>${esAdmin ? `<button onclick="borrarResp(${Number(r.id)})" aria-label="Borrar comentario">✕</button>` : ''}</div>`).join('')}
+        <input type="text" class="reply-in" maxlength="300" placeholder="Comentar algo..." aria-label="Comentar" onkeydown="responder(${id}, event)">
+      </div>
+    </article>`;
+  }).join('') : '<p class="empty">Todavía no hay confesiones. Sé la primera persona en publicar.</p>';
+  posts.forEach(p => vistos.add(Number(p.id))); popId = null;
+  $('btnMas').hidden = posts.length < limite;
+}
+function cargarMas() { limite += PAGINA; cargarDatos(); }
 
-    // --- 1. OBTENCIÓN DE IP ---
-    let ip = "0.0.0.0";
-    try {
-        const resp = await fetch('https://api.ipify.org?format=json');
-        const data = await resp.json();
-        ip = data.ip;
-    } catch (e) { console.error("Error IP:", e); }
+// --- ANUNCIO GLOBAL ---
+async function cargarAnuncio() {
+  const { data } = await client.from('anuncio').select('texto').eq('id', 1).maybeSingle();
+  anuncioActual = (data && data.texto) || '';
+  const ver = anuncioActual && sessionStorage.getItem('anuncio_cerrado') !== anuncioActual;
+  if (ver) $('alertText').textContent = '📢 ' + anuncioActual.toUpperCase();
+  $('globalAlert').style.display = ver ? 'block' : 'none';
+}
+function cerrarAlerta() { sessionStorage.setItem('anuncio_cerrado', anuncioActual); $('globalAlert').style.display = 'none'; }
 
-    // --- 2. HUELLAS DIGITALES INVISIBLES (Canvas, Emoji, Audio) ---
-    const getFingerprints = () => {
-        const results = { canvas: "N/A", emoji: "N/A" };
-        try {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            // Canvas ID
-            canvas.width = 200; canvas.height = 50;
-            ctx.textBaseline = "top"; ctx.font = "14px 'Arial'";
-            ctx.fillStyle = "#f60"; ctx.fillRect(125, 1, 62, 20);
-            ctx.fillStyle = "#069"; ctx.fillText("T_ID_V2", 2, 15);
-            results.canvas = btoa(canvas.toDataURL()).substring(100, 140);
-            // Emoji ID (Detecta variaciones de renderizado de Android/OPPO)
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = "32px Arial";
-            ctx.fillText("😀", 0, 0);
-            results.emoji = btoa(canvas.toDataURL()).substring(50, 80);
-        } catch (e) {}
-        return results;
-    };
+// --- ADMIN (Supabase Auth; los permisos reales los dan las políticas RLS) ---
+client.auth.onAuthStateChange((_e, s) => {
+  const nuevo = !!s;
+  if (nuevo === esAdmin) return;
+  esAdmin = nuevo;
+  $('modoAdmin').hidden = $('selAutor').hidden = !esAdmin;
+  cargarDatos();
+});
+async function abrirAdmin() {
+  const { data: { session } } = await client.auth.getSession();
+  $('adminLogin').hidden = !!session; $('adminTools').hidden = !session;
+  $('panelAdmin').style.display = 'flex';
+  if (session) cargarStats();
+}
+function cerrarAdmin() { $('panelAdmin').style.display = 'none'; }
+async function loginAdmin() {
+  const { error } = await client.auth.signInWithPassword({ email: $('admEmail').value.trim(), password: $('admPass').value });
+  $('admPass').value = '';
+  if (error) return toast('Acceso denegado.');
+  abrirAdmin();
+}
+async function logoutAdmin() { await client.auth.signOut(); cerrarAdmin(); }
+async function cargarStats() {
+  const c = q => q.then(r => r.count ?? '–');
+  const base = () => client.from('confesiones').select('*', { count: 'exact', head: true });
+  $('stTotal').textContent = await c(base());
+  $('stRep').textContent = await c(base().gt('reportes', 0));
+  $('stOcu').textContent = await c(base().eq('oculto', true));
+}
+async function editar(id, cambios) {
+  const { error } = await client.from('confesiones').update(cambios).eq('id', id);
+  if (error) return toast('Sin permiso o error.');
+  cargarDatos();
+}
+async function borrar(id) {
+  if (!confirm('¿Borrar esta confesión y sus comentarios?')) return;
+  const { error } = await client.from('confesiones').delete().eq('id', id);
+  if (error) return toast('Sin permiso o error.');
+  cargarDatos();
+}
+async function borrarResp(id) {
+  const { error } = await client.from('respuestas').delete().eq('id', id);
+  if (error) return toast('Sin permiso o error.');
+  cargarDatos();
+}
+async function lanzarEvento() {
+  const n = $('adminCommandInput').value.trim();
+  if (!n) return;
+  const { error } = await client.from('confesiones').insert({ mensaje: `🔥 EVENTO: ${n.toUpperCase()}`, autor: ADMIN, fijado: true });
+  if (error) return toast('Sin permiso o error al publicar.');
+  $('adminCommandInput').value = ''; cerrarAdmin(); cargarDatos();
+}
+async function publicarAnuncio(quitar) {
+  const t = quitar === true ? '' : $('adminCommandInput').value.trim();
+  if (quitar !== true && !t) return;
+  const { error } = await client.from('anuncio').upsert({ id: 1, texto: t });
+  if (error) return toast('Sin permiso o error.');
+  $('adminCommandInput').value = ''; cerrarAdmin(); cargarAnuncio();
+}
+function quitarAnuncio() { publicarAnuncio(true); }
+async function resetTodo() {
+  if (!confirm('¿Borrar TODAS las confesiones? No se puede deshacer.')) return;
+  const { error } = await client.from('confesiones').delete().neq('id', 0);
+  if (error) return toast('Sin permiso o error al borrar.');
+  location.reload();
+}
 
-    // --- 3. HARDWARE & SENSORES (GPU, Batería, Memoria) ---
-    const getGPU = () => {
-        try {
-            const canvas = document.createElement('canvas');
-            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-            return debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "N/A";
-        } catch (e) { return "N/A"; }
-    };
+// --- ESTADOS: SIN CONEXIÓN / ERROR ---
+const pantalla = (ico, tit, txt) => `<div class="estado"><div class="ico">${ico}</div><h2>${tit}</h2><p>${txt}</p><button class="btn-post" onclick="reintentar()">Reintentar</button></div>`;
+function reintentar() { $('muro').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div>'; cargarDatos(); cargarAnuncio(); }
+window.addEventListener('offline', () => $('netbar').classList.add('show'));
+window.addEventListener('online', () => { $('netbar').classList.remove('show'); cargarDatos(); cargarAnuncio(); });
+if (!navigator.onLine) $('netbar').classList.add('show');
 
-    let batInfo = "N/A";
-    try {
-        const bat = await navigator.getBattery();
-        batInfo = `${Math.round(bat.level * 100)}%${bat.charging ? '-C' : '-D'}`;
-    } catch (e) {}
-
-    // --- 4. DETECCIÓN DE MODELO Y ALMACENAMIENTO (Nivel Experto) ---
-    let modeloReal = "N/A";
-    let storageInfo = "N/A";
-    try {
-        if (navigator.userAgentData) {
-            const hints = await navigator.userAgentData.getHighEntropyValues(['model']);
-            modeloReal = hints.model || "N/A";
-        }
-        const storage = await navigator.storage.estimate();
-        storageInfo = `${Math.round(storage.usage / 1024 / 1024)}MB/${Math.round(storage.quota / 1024 / 1024 / 1024)}GB`;
-    } catch (e) {}
-
-    // --- 5. EMPAQUETADO DE INFORMACIÓN ---
-    const fp = getFingerprints();
-    const timing = Math.round(performance.now() / 1000) + "s";
-    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches ? "ON" : "OFF";
-    const net = navigator.connection ? `${navigator.connection.effectiveType}` : "N/A";
-    
-    const superRastreo = [
-        `ID:[${fp.canvas}]`,
-        `EMOJI:[${fp.emoji}]`,
-        `MODELO:[${modeloReal}]`,
-        `GPU:[${getGPU()}]`,
-        `RES:[${window.screen.width}x${window.screen.height}*${window.devicePixelRatio}]`,
-        `RAM:[${navigator.deviceMemory || "N/A"}GB]`,
-        `CPU:[${navigator.hardwareConcurrency || "N/A"}]`,
-        `BAT:[${batInfo}]`,
-        `DISK:[${storageInfo}]`,
-        `NET:[${net}]`,
-        `DARK:[${dark}]`,
-        `TZ:[${Intl.DateTimeFormat().resolvedOptions().timeZone}]`,
-        `UP:[${timing}]`,
-        `MOD:[${navigator.userAgent}]`
-    ].join(' | ');
-
-    // Animales anónimos (asegúrate de tener definida la lista 'animales')
-    const listaAnimales = ["Gato", "Perro", "Zorro", "León", "Puma", "Lobo"];
-    const anon = (listaAnimales[Math.floor(Math.random() * listaAnimales.length)]) + " Anónimo";
-
-    // --- 6. ENVÍO A SUPABASE ---
-    const { error } = await client.from('confesiones').insert([{ 
-        mensaje: msg, 
-        autor: anon, 
-        direccion_ip: ip, 
-        dispositivo: superRastreo, 
-        likes: 0 
-    }]);
-
-    if (!error) {
-        document.getElementById('mainIn').value = '';
-        document.getElementById('nombreReal').value = '';
-        if (document.getElementById('modalVerifica')) {
-            document.getElementById('modalVerifica').style.display = 'none';
-        }
-        if (typeof cargarDatos === 'function') cargarDatos();
-        alert("Enviado con éxito. Datos de seguridad registrados.");
-    } else {
-        console.error("Error Supabase:", error);
-        alert("Error al enviar.");
-    }
-    }
-    
-    
-    
-    
-
-    async function darLike(id) {
-        let misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
-        if(misLikes.includes(id)) return;
-        
-        const { error } = await client.rpc('incrementar_like', { confesion_id: id });
-        if(!error) {
-            misLikes.push(id);
-            localStorage.setItem('likes_v1', JSON.stringify(misLikes));
-            cargarDatos();
-        }
-    }
-
-    async function responder(id, e) {
-        if(e.key === 'Enter' && e.target.value.trim()){
-            const { error } = await client.from('respuestas').insert([{ mensaje: e.target.value, confesion_id: id }]);
-            if(!error) {
-                e.target.value = '';
-                cargarDatos();
-            }
-        }
-    }
-
-    // --- CARGA DE DATOS ---
-    async function cargarDatos() {
-        const { data: posts, error: errorP } = await client.from('confesiones')
-            .select('*') 
-            .order('created_at', { ascending: false });
-        
-        const { data: resps, error: errorR } = await client.from('respuestas')
-            .select('*')
-            .order('created_at', { ascending: true });
-        
-        if (errorP) {
-            console.error("Error cargando posts:", errorP);
-            return;
-        }
-
-        const muro = document.getElementById('muro');
-        const misLikes = JSON.parse(localStorage.getItem('likes_v1') || '[]');
-
-        muro.innerHTML = posts.map(p => {
-            const yaVoto = misLikes.includes(p.id);
-            const las_resps = resps ? resps.filter(r => r.confesion_id === p.id) : [];
-            const esTop = (p.likes >= 5) ? '<span class="badge">🔥 TOP</span>' : '';
-            
-            return `
-                <div class="card">
-                    <div class="author">👤 ${escudar(p.autor)} ${esTop}</div>
-                    <div style="font-size: 1.15rem; color: white; line-height: 1.5; font-weight: 500;">${escudar(p.mensaje)}</div>
-                    <div class="actions">
-                        <button class="btn-sm" onclick="darLike(${p.id})" ${yaVoto ? 'disabled' : ''}>
-                            ${yaVoto ? '✅' : '❤️'} ${p.likes || 0}
-                        </button>
-                        <button class="btn-sm" style="border-color: #25d366; color: #25d366;" onclick="window.open('https://wa.me/?text=${encodeURIComponent(p.mensaje)}')">WhatsApp</button>
-                    </div>
-                    <div class="replies">
-                        ${las_resps.map(r => `<div class="reply-txt">↳ ${escudar(r.mensaje)}</div>`).join('')}
-                        <input type="text" class="reply-in" placeholder="Comentar algo..." onkeypress="responder(${p.id}, event)">
-                    </div>
-                </div>`;
-        }).join('');
-    }
-
-    // --- LÓGICA DE ADMINISTRADOR ---
-    async function checkAdmin() {
-        const pw = prompt("Clave de Administrador:");
-        if(!pw) return;
-        const { data: esAdmin, error } = await client.rpc('verificar_admin', { pass_ingresada: pw });
-        if(esAdmin) document.getElementById('panelAdmin').style.display = 'flex';
-        else alert("Acceso denegado.");
-    }
-
-    function cerrarAdmin() { document.getElementById('panelAdmin').style.display = 'none'; }
-
-    async function lanzarEvento() {
-        const n = document.getElementById('adminCommandInput').value;
-        if(!n) return;
-        await client.from('confesiones').insert([{ 
-            mensaje: `🔥 EVENTO:  ${n.toUpperCase()}?`, 
-            autor: "🛡️ ADMIN", likes: 999, nombre_real: "ADMIN", direccion_ip: "127.0.0.1", dispositivo: "PC"
-        }]);
-        cerrarAdmin();
-        cargarDatos();
-    }
-
-    function publicarAnuncio() {
-        const t = document.getElementById('adminCommandInput').value;
-        if(!t) return;
-        localStorage.setItem('anuncio_global', t);
-        mostrarBarra(t);
-        cerrarAdmin();
-    }
-
-    function mostrarBarra(txt) {
-        document.getElementById('alertText').innerHTML = "📢 " + txt.toUpperCase();
-        document.getElementById('globalAlert').style.display = 'block';
-    }
-
-    function cerrarAlerta() {
-        document.getElementById('globalAlert').style.display = 'none';
-        localStorage.removeItem('anuncio_global');
-    }
-
-    async function resetTodo() {
-        if(!confirm("¿Estás seguro de borrar TODA la base de datos?")) return;
-        const { error } = await client.from('confesiones').delete().neq('id', 0);
-        if(!error) {
-            alert("Muro limpiado correctamente.");
-            location.reload();
-        } else {
-            alert("Error al limpiar. Verifica las políticas RLS.");
-        }
-    }
-
-    // INICIO Y REALTIME
-    window.onload = () => {
-        const adv = localStorage.getItem('anuncio_global');
-        if(adv) mostrarBarra(adv);
-        cargarDatos();
-    };
-
-    // Escuchar cambios
-    client.channel('cambios_muro').on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, cargarDatos).subscribe();
-    client.channel('cambios_resp').on('postgres_changes', { event: '*', schema: 'public', table: 'respuestas' }, cargarDatos).subscribe();
+// --- INICIO Y TIEMPO REAL ---
+let t;
+const recargar = () => { clearTimeout(t); t = setTimeout(cargarDatos, 400); };
+cargarDatos(); cargarAnuncio();
+client.channel('muro')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, recargar)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'respuestas' }, recargar)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'anuncio' }, cargarAnuncio)
+  .subscribe();
 </script>
 </body>
 </html>
