@@ -4,19 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#09090b">
-<meta name="description" content="Confesionario anónimo. No guardamos tu IP ni datos de tu dispositivo.">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src https://rutohcsjlmfqgtflatrg.supabase.co wss://rutohcsjlmfqgtflatrg.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="description" content="Confesiones anónimas. Lee, comenta y reacciona.">
 <meta property="og:title" content="🤫 Confesionario">
-<meta property="og:description" content="Confesiones anónimas. No guardamos tu IP ni datos de tu dispositivo.">
+<meta property="og:description" content="Confesiones anónimas. Lee, comenta y reacciona.">
 <meta property="og:type" content="website">
 <title>Confesionario</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🤫%3C/text%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
 <style>
 :root{--bg:#05060f;--glass:rgba(14,16,34,.55);--line:rgba(148,163,255,.14);--cyan:#22d3ee;--accent:#8b5cf6;--pink:#f472b6;--glow:rgba(34,211,238,.35);--ok:#34d399;--ok-bg:rgba(52,211,153,.1);--txt:#eef2ff;--dim:#8b93b8}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);margin:0;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--txt);margin:0;display:flex;flex-direction:column;align-items:center;min-height:100vh;min-height:100dvh}
 button,input,textarea,select{font-family:inherit}
 [hidden]{display:none!important}
 :focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
@@ -29,7 +31,7 @@ button,input,textarea,select{font-family:inherit}
 #globalAlert button{background:none;border:none;color:#fff;font-weight:800;cursor:pointer;margin-left:15px;font-size:1.2rem}
 .container{width:100%;max-width:560px;padding:15px}
 header{text-align:center;padding:34px 0 22px}
-h1{font-family:'Space Grotesk','Inter',sans-serif;font-size:clamp(2.2rem,9vw,3rem);margin:14px 0 6px;font-weight:700;letter-spacing:-.03em}
+h1{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:clamp(2.2rem,9vw,3rem);margin:14px 0 6px;font-weight:700;letter-spacing:-.03em}
 .grad{background:linear-gradient(90deg,#fff,var(--cyan),var(--accent),#fff);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .sub{color:var(--dim);font-size:.95rem;margin:5px 0 0}
 .live,.modo{font-size:.75rem;font-weight:700;padding:6px 12px;border-radius:20px;display:inline-flex;align-items:center;gap:8px}
@@ -75,7 +77,7 @@ select{background:rgba(5,6,15,.6);color:var(--txt);border:1px solid var(--line);
 .empty{text-align:center;color:var(--dim);padding:30px 0}
 .estado{padding:40px 24px;text-align:center;margin-bottom:20px}
 .estado .ico{font-size:3rem;margin-bottom:8px}
-.estado h2{font-family:'Space Grotesk',sans-serif;margin:0 0 8px;font-size:1.4rem}
+.estado h2{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;margin:0 0 8px;font-size:1.4rem}
 .estado p{color:var(--dim);margin:0 0 20px;line-height:1.5}
 .skeleton{height:150px;border-radius:22px;margin-bottom:18px;background:linear-gradient(90deg,rgba(148,163,255,.04),rgba(148,163,255,.1),rgba(148,163,255,.04));background-size:200% 100%}
 footer{color:var(--dim);font-size:.8rem;text-align:center;padding:20px 0 90px}
@@ -84,7 +86,7 @@ footer{color:var(--dim);font-size:.8rem;text-align:center;padding:20px 0 90px}
 .modal-card input{width:100%;padding:15px;margin:8px 0;border-radius:14px;border:1px solid var(--line);background:rgba(5,6,15,.6);color:#fff;text-align:center;font-size:1rem}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
 .stats div{background:rgba(5,6,15,.5);border:1px solid var(--line);border-radius:12px;padding:10px 4px;font-size:.75rem;color:var(--dim)}
-.stats b{display:block;font-family:'Space Grotesk',sans-serif;font-size:1.4rem;color:var(--cyan)}
+.stats b{display:block;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:1.4rem;color:var(--cyan)}
 .danger{background:linear-gradient(135deg,#dc2626,#991b1b)}
 .warn{background:linear-gradient(135deg,#d97706,#b45309)}
 .alt{background:rgba(148,163,255,.12);box-shadow:none}
@@ -108,6 +110,29 @@ footer{color:var(--dim);font-size:.8rem;text-align:center;padding:20px 0 90px}
 @keyframes pop{30%{transform:scale(1.28)}60%{transform:scale(.94)}}
 @keyframes float{50%{transform:translateY(-8px)}}
 }
+.tools{display:flex;gap:8px;margin-bottom:16px}
+.tools input{flex:1;min-width:0;background:rgba(5,6,15,.6);border:1px solid var(--line);border-radius:12px;color:#fff;padding:10px 14px;font-size:16px}
+.tools input:focus{outline:none;border-color:var(--cyan)}
+.tools select{font-size:.9rem}
+.link{background:none;border:none;color:var(--dim);cursor:pointer;font-size:.85rem;padding:0 0 8px}
+.link:hover{color:var(--cyan)}
+.card.resalta{box-shadow:0 0 0 2px var(--cyan),0 0 40px -10px var(--glow)}
+#anuncioActualTxt{margin:4px 0 10px;overflow-wrap:anywhere}
+.tools{flex-wrap:wrap}.tools input{flex:1 1 100%}.tools select{flex:1}
+.badge.c{background:rgba(34,211,238,.14);color:var(--cyan);border:1px solid rgba(34,211,238,.3)}
+#arriba{position:fixed;bottom:20px;right:20px;width:45px;height:45px;border-radius:50%;background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--line);color:var(--txt);font-size:18px;cursor:pointer;z-index:10001;opacity:0;pointer-events:none;transition:.3s}
+#arriba.show{opacity:1;pointer-events:auto}#arriba:hover{border-color:var(--cyan);transform:translateY(-2px)}
+h1{text-shadow:0 0 60px rgba(139,92,246,.35)}.msg{line-height:1.62}
+.post-foot select{max-width:46%}.modal-card select{width:100%;margin:6px 0}
+#tema{position:fixed;bottom:75px;right:20px;width:45px;height:45px;border-radius:50%;background:var(--glass);backdrop-filter:blur(10px);border:1px solid var(--line);font-size:18px;cursor:pointer;z-index:10001;transition:.3s}
+#tema:hover{border-color:var(--cyan);transform:rotate(25deg)}
+:root[data-theme=light]{--bg:#f3f5ff;--glass:rgba(255,255,255,.72);--line:rgba(70,80,160,.2);--txt:#14163a;--dim:#575f8c;--glow:rgba(8,145,178,.28);--cyan:#0891b2;--ok:#059669;--ok-bg:rgba(5,150,105,.1)}
+[data-theme=light] textarea,[data-theme=light] select,[data-theme=light] .tools input,[data-theme=light] .modal-card input,[data-theme=light] .stats div{background:rgba(255,255,255,.85);color:var(--txt)}
+[data-theme=light] .reply-in{color:var(--txt)}[data-theme=light] .replies{background:rgba(70,80,160,.06)}
+[data-theme=light] .grad{background-image:linear-gradient(90deg,#14163a,#0891b2,#7c3aed,#14163a)}
+[data-theme=light] .bg::before{opacity:.45}[data-theme=light] .bg::after{opacity:.5}
+[data-theme=light] .btn-sm{background:rgba(70,80,160,.07);border-color:rgba(70,80,160,.2)}
+[data-theme=light] .modal-overlay{background:rgba(220,225,250,.8)}
 </style>
 </head>
 <body>
@@ -118,9 +143,9 @@ footer{color:var(--dim);font-size:.8rem;text-align:center;padding:20px 0 90px}
 
 <main class="container">
   <header>
-    <div><span class="live"><span class="dot"></span> Anónimo de verdad</span><span class="modo" id="modoAdmin" hidden>🛡️ Modo admin</span></div>
+    <div><span class="live"><span class="dot"></span> En vivo</span><span class="modo" id="modoAdmin" hidden>🛡️ Modo admin</span></div>
     <h1><span aria-hidden="true">🤫</span> <span class="grad">Confesionario</span></h1>
-    <p class="sub">No guardamos tu IP, tu nombre ni datos de tu dispositivo.</p>
+    <p class="sub">Lo que no te animas a decir, dilo aquí.</p>
   </header>
 
   <section class="post-box">
@@ -128,6 +153,7 @@ footer{color:var(--dim);font-size:.8rem;text-align:center;padding:20px 0 90px}
     <textarea id="mainIn" maxlength="500" placeholder="¿Qué quieres confesar hoy?"></textarea>
     <div class="post-foot">
       <span class="count"><span id="contador">0</span>/500</span>
+      <select id="selCat" aria-label="Categoría de tu confesión"></select>
       <select id="selAutor" aria-label="Publicar como" hidden>
         <option value="anon">Publicar como anónimo</option>
         <option value="admin">Publicar como 🛡️ Admin</option>
@@ -136,12 +162,17 @@ footer{color:var(--dim);font-size:.8rem;text-align:center;padding:20px 0 90px}
     </div>
   </section>
 
+  <div class="tools" role="search">
+    <input type="search" id="buscar" placeholder="Buscar confesiones…" maxlength="60" aria-label="Buscar confesiones">
+    <select id="orden" aria-label="Ordenar y filtrar"><option value="nuevas">Recientes</option><option value="top">Más populares</option><option value="coment">Más comentadas</option><option value="guardadas">⭐ Guardadas</option></select>
+    <select id="fCat" aria-label="Filtrar por categoría"></select>
+  </div>
   <section id="muro" aria-live="polite"><div class="skeleton"></div><div class="skeleton"></div></section>
   <div style="text-align:center"><button class="btn-sm" id="btnMas" onclick="cargarMas()" hidden>Cargar más</button></div>
-  <footer>Solo se guarda el texto que publicas. Nada más.</footer>
+  <footer>Confesionario</footer>
 </main>
 
-<div id="panelAdmin" class="modal-overlay" role="dialog" aria-label="Panel de administración">
+<div id="panelAdmin" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Panel de administración">
   <div class="modal-card">
     <h3 style="margin-top:0">⚙️ Administración</h3>
     <div id="adminLogin">
@@ -150,23 +181,31 @@ footer{color:var(--dim);font-size:.8rem;text-align:center;padding:20px 0 90px}
       <button class="btn-post btn-wide" onclick="loginAdmin()">Entrar</button>
     </div>
     <div id="adminTools" hidden>
-      <div class="stats"><div><b id="stTotal">–</b>Publicadas</div><div><b id="stRep">–</b>Reportadas</div><div><b id="stOcu">–</b>Ocultas</div></div>
+      <div class="stats"><div><b id="stTotal">–</b>Publicadas</div><div><b id="stRep">–</b>Reportadas</div><div><b id="stOcu">–</b>Ocultas</div><div><b id="stHoy">–</b>Hoy</div><div><b id="stCom">–</b>Comentarios</div><div><b id="stLik">–</b>Likes</div></div>
+      <p class="hint" id="anuncioActualTxt"></p>
+      <p class="hint" id="stCats"></p>
       <input type="text" id="adminCommandInput" placeholder="Mensaje para evento o anuncio..." maxlength="200">
+      <select id="anDur" aria-label="Duración del anuncio"><option value="0">Sin caducidad</option><option value="1">Dura 1 hora</option><option value="24">Dura 24 horas</option></select>
       <button class="btn-post btn-wide" onclick="lanzarEvento()">Lanzar como post 🔥</button>
       <button class="btn-post btn-wide warn" onclick="publicarAnuncio()">Poner en barra roja 📢</button>
       <button class="btn-post btn-wide alt" onclick="quitarAnuncio()">Quitar anuncio</button>
       <button class="btn-post btn-wide danger" onclick="resetTodo()">Vaciar muro</button>
+      <button class="btn-post btn-wide alt" onclick="exportarCSV()">Exportar CSV ⬇️</button>
+      <button class="btn-post btn-wide alt" onclick="depurar()">Borrar antiguas 🧹</button>
       <button class="btn-sm btn-wide" onclick="logoutAdmin()">Cerrar sesión</button>
     </div>
     <button class="btn-sm btn-wide" onclick="cerrarAdmin()">Cerrar</button>
   </div>
 </div>
 
-<button id="adminTrigger" onclick="abrirAdmin()" aria-label="Administración">⚙️</button>
+<button id="adminTrigger" onclick="abrirAdmin()" aria-label="Administración" hidden>⚙️</button>
+<button id="tema" aria-label="Cambiar entre tema claro y oscuro">🌓</button>
+<button id="arriba" aria-label="Volver arriba">↑</button>
 <div id="toast" role="status"></div>
 
 <script>
 // La clave "anon" es pública por diseño: la seguridad real está en las políticas RLS (supabase_setup.sql + supabase_v2.sql).
+if (typeof supabase === 'undefined') { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:40px;text-align:center">No se pudo cargar el sitio. Recarga la página.</p>'); throw new Error('supabase-js no cargó'); }
 const client = supabase.createClient(
   'https://rutohcsjlmfqgtflatrg.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1dG9oY3NqbG1mcWd0ZmxhdHJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1OTU4MjcsImV4cCI6MjA5MTE3MTgyN30.Kg1pjBYMZiFpseplMVjfVtd4dT2JTdfkYJV_NtkW7mw'
@@ -174,7 +213,11 @@ const client = supabase.createClient(
 const $ = id => document.getElementById(id);
 const ANIMALES = ["Lobo", "Zorro", "Panda", "Tigre", "León", "Águila", "Leopardo", "Búho"];
 const ADMIN = '🛡️ ADMIN', ESPERA_MS = 30000, PAGINA = 20;
-let esAdmin = false, limite = PAGINA, anuncioActual = '', popId = null;
+let esAdmin = false, limite = PAGINA, anuncioActual = '', popId = null, vista = 'nuevas', busqueda = '', irHecho = false, fcat = '';
+const abiertos = new Set();
+const CATS = { general: '💬 General', amor: '💘 Amor', escuela: '🏫 Escuela', amistad: '🤝 Amistad', familia: '🏠 Familia', random: '🎲 Random' };
+const REAC = ['😂', '😮', '😢'];
+const reacBtns = (p, id, mr) => REAC.map(e => `<button class="btn-sm" onclick="reaccionar(${id},'${e}')" ${(mr[id] || []).includes(e) ? 'disabled' : ''} aria-label="Reaccionar ${e}">${e} ${(p.reacciones && p.reacciones[e]) || 0}</button>`).join('');
 const vistos = new Set();
 
 const esc = t => { const d = document.createElement('div'); d.textContent = t ?? ''; return d.innerHTML; };
@@ -189,8 +232,22 @@ function hace(f) {
   if (s < 86400) return `hace ${Math.floor(s / 3600)} h`;
   return `hace ${Math.floor(s / 86400)} d`;
 }
-$('mainIn').addEventListener('input', e => { $('contador').textContent = e.target.value.length; });
+$('mainIn').addEventListener('input', e => { const t = e.target; $('contador').textContent = t.value.length; $('contador').parentElement.style.color = t.value.length > 450 ? '#fbbf24' : ''; guardar('borrador', t.value); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 320) + 'px'; });
+$('mainIn').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) publicar(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarAdmin(); });
+let tb; $('buscar').addEventListener('input', e => { clearTimeout(tb); tb = setTimeout(() => { busqueda = e.target.value.trim(); limite = PAGINA; cargarDatos(); }, 350); });
+$('orden').addEventListener('change', e => { vista = e.target.value; limite = PAGINA; cargarDatos(); });
+const opts = Object.entries(CATS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+$('selCat').innerHTML = opts; $('fCat').innerHTML = '<option value="">Todas las categorías</option>' + opts;
+$('fCat').addEventListener('change', e => { fcat = e.target.value; limite = PAGINA; cargarDatos(); });
+document.addEventListener('keydown', e => { if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); $('buscar').focus(); } });
+window.addEventListener('scroll', () => $('arriba').classList.toggle('show', scrollY > 600), { passive: true });
+$('arriba').onclick = () => scrollTo({ top: 0, behavior: 'smooth' });
+const aplicarTema = t => { document.documentElement.dataset.theme = t; document.querySelector('meta[name=theme-color]').content = t === 'light' ? '#f3f5ff' : '#09090b'; };
+aplicarTema(leer('tema', matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+$('tema').onclick = () => { const t = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'; guardar('tema', t); aplicarTema(t); };
+const borrador = leer('borrador', ''); if (borrador) { $('mainIn').value = borrador; $('mainIn').dispatchEvent(new Event('input')); }
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 
 // --- PUBLICAR ---
 async function publicar() {
@@ -199,11 +256,11 @@ async function publicar() {
   const comoAdmin = esAdmin && $('selAutor').value === 'admin';
   if (!comoAdmin && Date.now() - leer('ultimo_post', 0) < ESPERA_MS) return toast('Espera unos segundos para publicar de nuevo.');
   $('btnPublicar').disabled = true;
-  const { error } = await client.from('confesiones').insert({ mensaje: msg, autor: comoAdmin ? ADMIN : alias() });
+  const { error } = await client.from('confesiones').insert({ mensaje: msg, autor: comoAdmin ? ADMIN : alias(), categoria: $('selCat').value });
   $('btnPublicar').disabled = false;
   if (error) return toast('No se pudo publicar. Intenta de nuevo.');
   if (!comoAdmin) guardar('ultimo_post', Date.now());
-  $('mainIn').value = ''; $('contador').textContent = '0';
+  $('mainIn').value = ''; $('mainIn').style.height = ''; guardar('borrador', ''); $('contador').textContent = '0';
   toast(comoAdmin ? 'Publicado como admin.' : 'Publicado de forma anónima.');
   cargarDatos();
 }
@@ -214,6 +271,22 @@ async function darLike(id) {
   if (mis.includes(id)) return;
   const { error } = await client.rpc('incrementar_like', { confesion_id: id });
   if (!error) { popId = id; mis.push(id); guardar('likes_v1', mis); cargarDatos(); }
+}
+function verTodos(id) { abiertos.add(id); cargarDatos(); }
+function guardarPost(id) {
+  let g = leer('guardadas_v1', []);
+  g = g.includes(id) ? g.filter(x => x !== id) : [...g, id];
+  guardar('guardadas_v1', g); toast(g.includes(id) ? 'Guardada en este dispositivo.' : 'Quitada de guardadas.'); cargarDatos();
+}
+async function compartir(id) {
+  const url = location.origin + location.pathname + '#c' + id;
+  try { if (navigator.share) await navigator.share({ url }); else { await navigator.clipboard.writeText(url); toast('Enlace copiado.'); } } catch {}
+}
+async function reaccionar(id, e) {
+  const mr = leer('reac_v1', {}); if ((mr[id] || []).includes(e)) return;
+  const { error } = await client.rpc('reaccionar', { confesion_id: id, emoji: e });
+  if (error) return toast('No se pudo reaccionar.');
+  mr[id] = [...(mr[id] || []), e]; guardar('reac_v1', mr); cargarDatos();
 }
 async function reportar(id) {
   const rep = leer('reportes_v1', []);
@@ -234,9 +307,12 @@ async function responder(id, e) {
 
 // --- MURO ---
 async function cargarDatos() {
-  const { data: posts, error } = await client.from('confesiones')
-    .select('id,mensaje,autor,likes,created_at,fijado,oculto,reportes')
-    .order('fijado', { ascending: false }).order('created_at', { ascending: false }).limit(limite);
+  let q = client.from('confesiones').select('id,mensaje,autor,likes,created_at,fijado,oculto,reportes,categoria,reacciones');
+  if (vista === 'guardadas') { const g = leer('guardadas_v1', []); q = q.in('id', g.length ? g : [0]); }
+  if (busqueda) q = q.ilike('mensaje', '%' + busqueda.replace(/[%_\\,()]/g, ' ') + '%');
+  if (fcat) q = q.eq('categoria', fcat);
+  q = vista === 'top' ? q.order('likes', { ascending: false }) : q.order('fijado', { ascending: false });
+  const { data: posts, error } = await q.order('created_at', { ascending: false }).limit(limite);
   if (error) {
     if (!$('muro').querySelector('.card')) $('muro').innerHTML = navigator.onLine
       ? pantalla('⚠️', 'No pudimos cargar el muro', 'Algo falló de nuestro lado. Inténtalo de nuevo en unos segundos.')
@@ -245,21 +321,27 @@ async function cargarDatos() {
   }
   const ids = posts.map(p => p.id);
   const { data: resps } = ids.length ? await client.from('respuestas').select('id,mensaje,confesion_id').in('confesion_id', ids).order('created_at') : { data: [] };
-  const likes = leer('likes_v1', []), reps = leer('reportes_v1', []);
+  const likes = leer('likes_v1', []), reps = leer('reportes_v1', []), gu = leer('guardadas_v1', []), mr = leer('reac_v1', {});
+  const borradores = {}; document.querySelectorAll('.reply-in').forEach(i => { if (i.value) borradores[i.dataset.id] = i.value; });
+  const enfoque = document.activeElement && document.activeElement.classList.contains('reply-in') ? document.activeElement.dataset.id : null;
 
+  if (vista === 'coment') posts.sort((a, b) => (resps || []).filter(r => r.confesion_id === b.id).length - (resps || []).filter(r => r.confesion_id === a.id).length);
   $('muro').innerHTML = posts.length ? posts.map((p, i) => {
     const rs = (resps || []).filter(r => r.confesion_id === p.id), id = Number(p.id), esA = p.autor === ADMIN;
-    return `<article class="card${p.oculto ? ' oculto' : ''}${esA ? ' admin-post' : ''}${vistos.has(id) ? '' : ' nuevo'}" style="--i:${Math.min(i, 8)}">
+    return `<article id="c${id}" class="card${p.oculto ? ' oculto' : ''}${esA ? ' admin-post' : ''}${vistos.has(id) ? '' : ' nuevo'}" style="--i:${Math.min(i, 8)}">
       <div class="head">
         <div class="author">${esA ? '🛡️' : '👤'} ${esc(esA ? 'Admin' : p.autor)}
-          ${p.fijado ? '<span class="badge p">📌 Fijado</span>' : ''}${p.likes >= 5 && !esA ? '<span class="badge">🔥 TOP</span>' : ''}
+          ${p.fijado ? '<span class="badge p">📌 Fijado</span>' : ''}${p.categoria && p.categoria !== 'general' && CATS[p.categoria] ? `<span class="badge c">${CATS[p.categoria]}</span>` : ''}${p.likes >= 5 && !esA ? '<span class="badge">🔥 TOP</span>' : ''}
           ${esAdmin && p.oculto ? '<span class="badge g">Oculto</span>' : ''}${esAdmin && p.reportes ? `<span class="badge g">🚩 ${p.reportes}</span>` : ''}</div>
         <span class="time">${hace(p.created_at)}</span>
       </div>
       <div class="msg">${esc(p.mensaje)}</div>
       <div class="actions">
         <button class="btn-sm${id === popId ? ' pop' : ''}" onclick="darLike(${id})" ${likes.includes(id) ? 'disabled' : ''} aria-label="Me gusta">${likes.includes(id) ? '✅' : '❤️'} ${p.likes || 0}</button>
+        ${reacBtns(p, id, mr)}
         <a class="btn-sm wa" href="https://wa.me/?text=${encodeURIComponent(p.mensaje)}" target="_blank" rel="noopener">WhatsApp</a>
+        <button class="btn-sm" onclick="compartir(${id})" aria-label="Copiar enlace">🔗</button>
+        <button class="btn-sm" onclick="guardarPost(${id})" aria-label="Guardar">${gu.includes(id) ? '⭐' : '☆'}</button>
         ${esAdmin ? '' : `<button class="btn-sm" onclick="reportar(${id})" ${reps.includes(id) ? 'disabled' : ''} aria-label="Reportar">🚩</button>`}
       </div>
       ${esAdmin ? `<div class="adm">
@@ -267,20 +349,22 @@ async function cargarDatos() {
         <button class="btn-sm" onclick="editar(${id},{oculto:${!p.oculto},reportes:0})">${p.oculto ? 'Mostrar' : 'Ocultar'}</button>
         <button class="btn-sm" onclick="borrar(${id})">🗑️ Borrar</button></div>` : ''}
       <div class="replies">
-        ${rs.map(r => `<div class="reply-txt"><span>↳ ${esc(r.mensaje)}</span>${esAdmin ? `<button onclick="borrarResp(${Number(r.id)})" aria-label="Borrar comentario">✕</button>` : ''}</div>`).join('')}
-        <input type="text" class="reply-in" maxlength="300" placeholder="Comentar algo..." aria-label="Comentar" onkeydown="responder(${id}, event)">
+        ${rs.length > 2 && !abiertos.has(id) ? `<button class="link" onclick="verTodos(${id})">Ver los ${rs.length} comentarios</button>` : ''}${rs.slice(abiertos.has(id) ? 0 : -2).map(r => `<div class="reply-txt"><span>↳ ${esc(r.mensaje)}</span>${esAdmin ? `<button onclick="borrarResp(${Number(r.id)})" aria-label="Borrar comentario">✕</button>` : ''}</div>`).join('')}
+        <input type="text" class="reply-in" maxlength="300" placeholder="Comentar algo..." aria-label="Comentar" data-id="${id}" onkeydown="responder(${id}, event)">
       </div>
     </article>`;
-  }).join('') : '<p class="empty">Todavía no hay confesiones. Sé la primera persona en publicar.</p>';
+  }).join('') : (busqueda || vista === 'guardadas' ? '<p class="empty">No hay resultados.</p>' : '<p class="empty">Todavía no hay confesiones. Sé la primera persona en publicar.</p>');
+  document.querySelectorAll('.reply-in').forEach(i => { if (borradores[i.dataset.id]) i.value = borradores[i.dataset.id]; if (i.dataset.id === enfoque) i.focus(); });
   posts.forEach(p => vistos.add(Number(p.id))); popId = null;
+  if (!irHecho && /^#c\d+$/.test(location.hash)) { irHecho = true; const el = $(location.hash.slice(1)); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('resalta'); } }
   $('btnMas').hidden = posts.length < limite;
 }
 function cargarMas() { limite += PAGINA; cargarDatos(); }
 
 // --- ANUNCIO GLOBAL ---
 async function cargarAnuncio() {
-  const { data } = await client.from('anuncio').select('texto').eq('id', 1).maybeSingle();
-  anuncioActual = (data && data.texto) || '';
+  const { data } = await client.from('anuncio').select('texto,expira').eq('id', 1).maybeSingle();
+  anuncioActual = (data && data.texto && !(data.expira && new Date(data.expira) < new Date())) ? data.texto : '';
   const ver = anuncioActual && sessionStorage.getItem('anuncio_cerrado') !== anuncioActual;
   if (ver) $('alertText').textContent = '📢 ' + anuncioActual.toUpperCase();
   $('globalAlert').style.display = ver ? 'block' : 'none';
@@ -292,16 +376,19 @@ client.auth.onAuthStateChange((_e, s) => {
   const nuevo = !!s;
   if (nuevo === esAdmin) return;
   esAdmin = nuevo;
-  $('modoAdmin').hidden = $('selAutor').hidden = !esAdmin;
+  $('modoAdmin').hidden = $('selAutor').hidden = !esAdmin; $('adminTrigger').hidden = !esAdmin && location.hash !== '#admin';
   cargarDatos();
 });
 async function abrirAdmin() {
   const { data: { session } } = await client.auth.getSession();
   $('adminLogin').hidden = !!session; $('adminTools').hidden = !session;
   $('panelAdmin').style.display = 'flex';
+  (session ? $('adminTools').querySelector('button') : $('admEmail')).focus();
   if (session) cargarStats();
 }
-function cerrarAdmin() { $('panelAdmin').style.display = 'none'; }
+function cerrarAdmin() { $('panelAdmin').style.display = 'none'; if (!$('adminTrigger').hidden) $('adminTrigger').focus(); }
+window.addEventListener('hashchange', () => { $('adminTrigger').hidden = !esAdmin && location.hash !== '#admin'; });
+$('adminTrigger').hidden = location.hash !== '#admin';
 async function loginAdmin() {
   const { error } = await client.auth.signInWithPassword({ email: $('admEmail').value.trim(), password: $('admPass').value });
   $('admPass').value = '';
@@ -315,6 +402,13 @@ async function cargarStats() {
   $('stTotal').textContent = await c(base());
   $('stRep').textContent = await c(base().gt('reportes', 0));
   $('stOcu').textContent = await c(base().eq('oculto', true));
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  $('stHoy').textContent = await c(base().gte('created_at', hoy.toISOString()));
+  $('stCom').textContent = await c(client.from('respuestas').select('*', { count: 'exact', head: true }));
+  const { data: lk } = await client.from('confesiones').select('likes').limit(1000);
+  $('stLik').textContent = lk ? lk.reduce((a, r) => a + (r.likes || 0), 0) : '–';
+  $('stCats').textContent = (await Promise.all(Object.keys(CATS).map(k => c(base().eq('categoria', k)).then(n => CATS[k] + ' ' + n)))).join(' · ');
+  $('anuncioActualTxt').textContent = anuncioActual ? '📢 Anuncio activo: ' + anuncioActual : 'Sin anuncio activo.';
 }
 async function editar(id, cambios) {
   const { error } = await client.from('confesiones').update(cambios).eq('id', id);
@@ -342,13 +436,32 @@ async function lanzarEvento() {
 async function publicarAnuncio(quitar) {
   const t = quitar === true ? '' : $('adminCommandInput').value.trim();
   if (quitar !== true && !t) return;
-  const { error } = await client.from('anuncio').upsert({ id: 1, texto: t });
+  const h = quitar === true ? 0 : Number($('anDur').value); const { error } = await client.from('anuncio').upsert({ id: 1, texto: t, expira: h ? new Date(Date.now() + h * 36e5).toISOString() : null });
   if (error) return toast('Sin permiso o error.');
   $('adminCommandInput').value = ''; cerrarAdmin(); cargarAnuncio();
 }
 function quitarAnuncio() { publicarAnuncio(true); }
+async function exportarCSV() {
+  const { data, error } = await client.from('confesiones').select('id,created_at,autor,mensaje,likes,reportes,fijado,oculto').order('created_at', { ascending: false }).limit(1000);
+  if (error || !data) return toast('No se pudo exportar.');
+  const cel = v => { let t = String(v ?? ''); if (/^[=+\-@]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; };
+  const csv = '\ufeff' + ['id,fecha,autor,mensaje,likes,reportes,fijado,oculto', ...data.map(r => [r.id, r.created_at, r.autor, r.mensaje, r.likes, r.reportes, r.fijado, r.oculto].map(cel).join(','))].join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'confesiones.csv'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000); toast('Exportadas ' + data.length + ' (máx. 1000).');
+}
+async function depurar() {
+  const d = parseInt(prompt('¿Borrar confesiones con más de cuántos días? (las fijadas se conservan)', '30'), 10);
+  if (!d || d < 1) return;
+  const desde = new Date(Date.now() - d * 864e5).toISOString();
+  const { count } = await client.from('confesiones').select('*', { count: 'exact', head: true }).lt('created_at', desde).eq('fijado', false);
+  if (!count) return toast('No hay confesiones tan antiguas.');
+  if (!confirm(`Se borrarán ${count} confesiones y sus comentarios. No se puede deshacer.`)) return;
+  const { error } = await client.from('confesiones').delete().lt('created_at', desde).eq('fijado', false);
+  if (error) return toast('Sin permiso o error.');
+  toast('Se borraron ' + count + '.'); cargarDatos(); cargarStats();
+}
 async function resetTodo() {
-  if (!confirm('¿Borrar TODAS las confesiones? No se puede deshacer.')) return;
+  if ((prompt('Esto borra TODAS las confesiones y no se puede deshacer.\nEscribe BORRAR para confirmar:') || '').trim() !== 'BORRAR') return toast('Cancelado.');
   const { error } = await client.from('confesiones').delete().neq('id', 0);
   if (error) return toast('Sin permiso o error al borrar.');
   location.reload();
