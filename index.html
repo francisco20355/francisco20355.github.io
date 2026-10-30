@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#09090b">
 <meta name="referrer" content="no-referrer">
-<!-- CSP ACTUALIZADO: Se agregó 0.peerjs.com para permitir la conexión de PeerJS -->
+<!-- CSP actualizado para permitir Ably y PeerJS -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.ably.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src https://rutohcsjlmfqgtflatrg.supabase.co wss://rutohcsjlmfqgtflatrg.supabase.co wss://*.ably.io https://*.ably.io https://0.peerjs.com wss://0.peerjs.com; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="description" content="Confesiones anónimas. Lee, comenta y reacciona.">
 <meta property="og:title" content="🤫 Confesionario">
@@ -166,16 +166,20 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
 .zb button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(10px);color:var(--txt);font-size:18px;cursor:pointer}
 .zb button:hover{border-color:var(--cyan)}
 .lbtns{display:flex;gap:8px}.lbtns .btn-sm{flex:1}
-@media (prefers-reduced-motion:no-preference){#vistaConf:not([hidden]),#vistaLienzo:not([hidden]),#vistaBuzon:not([hidden]),#vistaEnviarBuzon:not([hidden]),#vistaVideo:not([hidden]){animation:vt .4s cubic-bezier(.16,1,.3,1)}@keyframes vt{from{opacity:0;transform:translateY(10px)}}}
-/* Nuevos estilos para el Buzón */
-.link-box { display: flex; gap: 8px; margin-bottom: 20px; background: rgba(5,6,15,.8); padding: 10px; border-radius: 12px; border: 1px solid var(--cyan); align-items: center; }
-.link-box input { flex: 1; background: transparent; border: none; color: var(--cyan); font-weight: bold; font-size: .9rem; outline: none; text-align: center; }
+@media (prefers-reduced-motion:no-preference){#vistaConf:not([hidden]),#vistaLienzo:not([hidden]),#vistaBuzon:not([hidden]),#vistaEnviarBuzon:not([hidden]),#vistaVideo:not([hidden]),#vistaVerRespuesta:not([hidden]){animation:vt .4s cubic-bezier(.16,1,.3,1)}@keyframes vt{from{opacity:0;transform:translateY(10px)}}}
+
+/* Estilos Buzón */
+.link-box { display: flex; gap: 8px; margin-bottom: 15px; background: rgba(5,6,15,.8); padding: 12px; border-radius: 12px; border: 1px solid var(--cyan); align-items: center; justify-content: space-between; }
+.link-box input { flex: 1; background: transparent; border: none; color: var(--cyan); font-weight: bold; font-size: .9rem; outline: none; text-align: center; min-width: 0; }
+.code-box { display: flex; flex-direction: column; align-items: center; background: rgba(245,158,11,.1); border: 1px dashed #fbbf24; padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+.code-box b { font-size: 1.5rem; color: #fbbf24; letter-spacing: 2px; margin: 5px 0; user-select: all; }
+.sent-msg { background: rgba(5,6,15,.4); padding: 15px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--line); }
+.sent-msg.replied { border-color: var(--cyan); }
 
 /* ========================================================= */
 /* ESTILOS FUTURISTAS PARA EL VIDEOCHAT (ASDTV)              */
 /* ========================================================= */
 #vistaVideo { font-family: 'Poppins', sans-serif; }
-/* El wrapper ahora crece dinámicamente para ocupar el espacio disponible */
 .video-wrapper { display: flex; flex-direction: column; height: calc(100vh - 180px); min-height: 600px; background: #0a0c10; border-radius: 22px; overflow: hidden; border: 1px solid rgba(34,211,238,0.3); box-shadow: 0 0 40px -10px rgba(34,211,238,0.2); position: relative;}
 .video-top { height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; background: rgba(14,16,34,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); }
 .video-logo { font-size: 24px; font-weight: 700; color: var(--amber, #ffa500); letter-spacing: -.5px; }
@@ -260,7 +264,6 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
     <h1><span aria-hidden="true">🤫</span> <span class="grad">Confesionario</span></h1>
     <p class="sub">Lo que no te animas a decir, dilo aquí.</p>
     
-    <!-- PESTAÑAS ACTUALIZADAS -->
     <nav class="tabs" role="tablist">
       <button role="tab" id="tab-conf" aria-selected="true" onclick="tab('conf')">💬 Confesiones</button>
       <button role="tab" id="tab-buzon" aria-selected="false" onclick="tab('buzon')">📥 Mi Buzón</button>
@@ -299,7 +302,7 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
   <div id="vistaBuzon" hidden>
     <section class="post-box" id="buzonSetup">
       <h2 class="lt">📥 Tu Buzón Anónimo</h2>
-      <p class="hint" style="margin-bottom:20px">Comparte este link en tus historias de Instagram, TikTok o WhatsApp. Cualquiera que entre podrá dejarte un mensaje secreto y tú podrás responderle aquí.</p>
+      <p class="hint" style="margin-bottom:20px">Comparte este link en tus historias. Cualquiera que entre podrá dejarte un mensaje secreto y tú podrás responderle aquí.</p>
       
       <div id="buzonSinCrear">
         <button class="btn-post btn-wide" onclick="crearMiBuzon()">✨ Crear mi link de preguntas</button>
@@ -308,12 +311,27 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
       <div id="buzonCreado" hidden>
         <div class="link-box">
           <input type="text" id="miLinkBuzon" readonly onclick="this.select()">
-          <button class="btn-sm" onclick="copiarLinkBuzon()">Copiar</button>
+          <button class="btn-sm" onclick="copiarLinkBuzon()">Copiar Link</button>
         </div>
+        
+        <div class="code-box">
+          <span style="font-size:0.85rem; color:#fbbf24;">⚠️ ¡No pierdas tu cuenta!</span>
+          <span style="font-size:0.85rem; color:#fbbf24;">Este es tu Código Secreto. Anótalo:</span>
+          <b id="miCodigoSecreto">----</b>
+          <button class="btn-sm" onclick="copiarCodigoSecreto()" style="background:#fbbf24; color:#000; border:none; font-weight:bold;">📋 Copiar Código</button>
+          <button class="btn-sm" onclick="recuperarCuenta()" style="margin-top:5px; background:transparent; border:none; color:var(--dim); text-decoration:underline;">Ya tengo un código, entrar</button>
+        </div>
+
         <button class="btn-post btn-wide" onclick="compartirLinkBuzon()">Compartir en Redes 📲</button>
         <hr style="border-color:var(--line); margin: 20px 0;">
+        
         <h3 style="margin:0 0 10px; font-size:1.1rem;">Mensajes recibidos</h3>
         <div id="listaBuzon"><p class="empty">Aún no tienes mensajes.</p></div>
+        
+        <hr style="border-color:var(--line); margin: 20px 0;">
+        
+        <h3 style="margin:0 0 10px; font-size:1.1rem;">Mensajes que enviaste</h3>
+        <div id="listaEnvios"><p class="empty">Aún no has enviado mensajes desde este dispositivo.</p></div>
       </div>
     </section>
   </div>
@@ -331,6 +349,29 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
       <div style="margin-top: 20px;">
         <a href="./" class="btn-sm" style="display:inline-block; text-decoration:none;">Ir a la app principal</a>
       </div>
+    </section>
+  </div>
+
+  <!-- VISTA: VER RESPUESTA (Para el que envió el mensaje) -->
+  <div id="vistaVerRespuesta" hidden>
+    <section class="post-box" style="text-align:center;">
+      <h2 style="margin:0 0 10px;">Estado de tu mensaje</h2>
+      
+      <div style="background:rgba(255,255,255,.05); padding:15px; border-radius:12px; text-align:left; margin-bottom:15px;">
+        <span style="font-size:0.8rem; color:var(--dim);">Tú escribiste:</span>
+        <p id="verMsgOriginal" style="margin:5px 0 0; font-style:italic;">...</p>
+      </div>
+
+      <div id="verRespuestaBox" style="display:none; background:rgba(34,211,238,.1); padding:15px; border-radius:12px; border-left:3px solid var(--cyan); text-align:left; margin-bottom:20px;">
+        <span style="font-size:0.8rem; color:var(--cyan); font-weight:bold;">Te respondieron:</span>
+        <p id="verMsgRespuesta" style="margin:5px 0 0; font-size:1.1rem;">...</p>
+      </div>
+      
+      <div id="verSinRespuesta" style="color:var(--dim); margin-bottom:20px;">
+        Aún no han respondido a tu mensaje. Vuelve más tarde.
+      </div>
+
+      <a href="./" class="btn-post" style="display:inline-block; text-decoration:none;">Volver al inicio</a>
     </section>
   </div>
 
@@ -355,8 +396,6 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
   <!-- VISTA: VIDEOCHAT (ASDTV) -->
   <div id="vistaVideo" hidden>
     <div class="video-wrapper">
-      
-      <!-- HEADER ASDTV -->
       <header class="video-top">
         <div class="video-logo">Asd<b>TV</b></div>
         <div class="video-top-right">
@@ -365,7 +404,6 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
         </div>
       </header>
 
-      <!-- ESCENARIO -->
       <main class="v-stage">
         <section class="v-remote" id="remote">
           <video id="peer-video" autoplay playsinline></video>
@@ -384,7 +422,6 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
           </div>
         </section>
 
-        <!-- CHAT -->
         <aside class="v-chat">
           <div class="v-chat-head">Chat <span id="common-tags"></span></div>
           <div id="v-log" aria-live="polite"></div>
@@ -395,7 +432,6 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
         </aside>
       </main>
 
-      <!-- CONTROLES -->
       <footer class="v-bar">
         <button class="v-stop" id="stop" onclick="stopChat()" hidden>Parar</button>
         <button class="v-go" id="go" onclick="mainAction()">Comenzar</button>
@@ -405,7 +441,6 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
         <button class="v-ic warn" onclick="reportAction()" title="Reportar">⚠️</button>
       </footer>
 
-      <!-- LANDING (PANTALLA DE INICIO DEL VIDEOCHAT) -->
       <div class="v-landing" id="v-landing">
         <div class="v-card">
           <div class="video-logo">Asd<b>TV</b></div>
@@ -421,7 +456,6 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
           <div class="v-online" style="justify-content:center;"><span class="v-dot" id="landing-dot"></span><span><b id="landing-count">–</b> personas en línea</span></div>
         </div>
       </div>
-
     </div>
   </div>
   
@@ -734,18 +768,17 @@ if (!navigator.onLine) $('netbar').classList.add('show');
 
 // --- PESTAÑAS Y RUTEO ---
 function tab(n) {
-  // Si salimos de la pestaña de video mientras hay una llamada, la cortamos por privacidad y datos
   if (state !== 'idle' && n !== 'video') {
     stopChat();
   }
 
-  // Agranda el contenedor principal solo cuando está en la vista de video
   document.body.classList.toggle('video-mode', n === 'video');
 
   $('vistaConf').hidden = n !== 'conf'; 
   $('vistaLienzo').hidden = n !== 'lienzo';
   $('vistaBuzon').hidden = n !== 'buzon';
   $('vistaEnviarBuzon').hidden = true; 
+  $('vistaVerRespuesta').hidden = true;
   $('vistaVideo').hidden = n !== 'video';
   
   $('tab-conf').setAttribute('aria-selected', n === 'conf'); 
@@ -754,7 +787,7 @@ function tab(n) {
   $('tab-video').setAttribute('aria-selected', n === 'video');
   
   if (n === 'buzon') cargarBuzon();
-  if (n === 'video') initVideoApp(); // Iniciar cámara solo cuando entran aquí
+  if (n === 'video') initVideoApp(); 
 
   let hash = '';
   if (n === 'lienzo') hash = '#lienzo';
@@ -775,11 +808,23 @@ $('mainIn').placeholder = FR[Math.floor(Math.random() * FR.length)];
 
 // --- LÓGICA DEL BUZÓN PERSONAL ---
 function crearMiBuzon() {
-  const id = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+  const id = Math.random().toString(36).substring(2, 8) + Math.random().toString(36).substring(2, 8);
   guardar('mi_buzon_id', id);
   actualizarUIBuzon();
-  toast('¡Buzón creado! Comparte tu link.');
+  toast('¡Buzón creado! Guarda tu código secreto.');
 }
+
+function recuperarCuenta() {
+  const code = prompt("Pega tu Código Secreto aquí para recuperar tu cuenta:");
+  if (code && code.trim().length > 5) {
+    guardar('mi_buzon_id', code.trim());
+    actualizarUIBuzon();
+    toast('Cuenta recuperada con éxito.');
+  } else if (code) {
+    toast('El código parece inválido.');
+  }
+}
+
 function actualizarUIBuzon() {
   const miId = leer('mi_buzon_id', null);
   if (miId) {
@@ -787,16 +832,34 @@ function actualizarUIBuzon() {
     $('buzonCreado').hidden = false;
     const url = location.origin + location.pathname + '#buzon/' + miId;
     $('miLinkBuzon').value = url;
+    $('miCodigoSecreto').textContent = miId;
   } else {
     $('buzonSinCrear').hidden = false;
     $('buzonCreado').hidden = true;
   }
 }
+
 function copiarLinkBuzon() {
   $('miLinkBuzon').select();
   document.execCommand('copy');
   toast('Link copiado al portapapeles 🔗');
 }
+
+function copiarCodigoSecreto() {
+  const code = $('miCodigoSecreto').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(code).then(() => toast('Código Secreto copiado. ¡Guárdalo bien!'));
+  } else {
+    const el = document.createElement('textarea');
+    el.value = code;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    toast('Código Secreto copiado. ¡Guárdalo bien!');
+  }
+}
+
 function compartirLinkBuzon() {
   const url = $('miLinkBuzon').value;
   if (navigator.share) {
@@ -812,31 +875,77 @@ async function cargarBuzon() {
   const miId = leer('mi_buzon_id', null);
   if (!miId) return;
 
+  // 1. Cargar mensajes RECIBIDOS (Usando RPC seguro)
   const lista = $('listaBuzon');
   lista.innerHTML = '<div class="skeleton" style="height:80px"></div>';
 
-  const { data, error } = await client.from('buzon').select('*').eq('destinatario', miId).order('created_at', { ascending: false });
+  const { data, error } = await client.rpc('leer_buzon', { id_destinatario: miId });
   
-  if (error) { lista.innerHTML = '<p class="empty">Error al cargar mensajes.</p>'; return; }
-  if (!data.length) { lista.innerHTML = '<p class="empty">Aún no tienes mensajes. ¡Comparte tu link en tus redes!</p>'; return; }
+  if (error) { lista.innerHTML = '<p class="empty">Error al cargar mensajes.</p>'; console.error(error); }
+  else if (!data.length) { lista.innerHTML = '<p class="empty">Aún no tienes mensajes. ¡Comparte tu link en tus redes!</p>'; }
+  else {
+    lista.innerHTML = data.map(m => `
+      <div class="card" style="padding:15px; margin-bottom:10px; background:rgba(5,6,15,.4)">
+        <p class="msg" style="font-size:1rem; margin-bottom:10px;">"${esc(m.mensaje)}"</p>
+        <p class="time" style="margin-bottom:10px;">${hace(m.created_at)}</p>
+        ${m.respuesta ? `
+          <div style="background:rgba(34,211,238,.1); padding:10px; border-radius:10px; border-left:3px solid var(--cyan);">
+            <span style="font-size:.8rem; color:var(--cyan); font-weight:bold;">Tu respuesta:</span>
+            <p style="margin:4px 0 0; font-size:.95rem;">${esc(m.respuesta)}</p>
+          </div>
+        ` : `
+          <div style="display:flex; gap:6px;">
+            <input type="text" id="resp_${m.id}" placeholder="Responder..." style="flex:1; background:transparent; border:1px solid var(--line); color:#fff; padding:8px; border-radius:8px;">
+            <button class="btn-sm" onclick="responderBuzon('${m.id}')" style="background:var(--cyan); color:#000;">Responder</button>
+          </div>
+        `}
+      </div>
+    `).join('');
+  }
 
-  lista.innerHTML = data.map(m => `
-    <div class="card" style="padding:15px; margin-bottom:10px; background:rgba(5,6,15,.4)">
-      <p class="msg" style="font-size:1rem; margin-bottom:10px;">"${esc(m.mensaje)}"</p>
-      <p class="time" style="margin-bottom:10px;">${hace(m.created_at)}</p>
-      ${m.respuesta ? `
-        <div style="background:rgba(34,211,238,.1); padding:10px; border-radius:10px; border-left:3px solid var(--cyan);">
-          <span style="font-size:.8rem; color:var(--cyan); font-weight:bold;">Tu respuesta:</span>
-          <p style="margin:4px 0 0; font-size:.95rem;">${esc(m.respuesta)}</p>
+  // 2. Cargar mensajes ENVIADOS (Desde localStorage)
+  const envios = leer('mis_envios_buzon', []);
+  const listaEnvios = $('listaEnvios');
+  
+  if (!envios.length) {
+    listaEnvios.innerHTML = '<p class="empty">Aún no has enviado mensajes desde este dispositivo.</p>';
+    return;
+  }
+
+  listaEnvios.innerHTML = '<div class="skeleton" style="height:60px"></div>';
+  
+  try {
+    const { data: dataEnvios, error: errorEnvios } = await client.from('buzon').select('id, mensaje, respuesta, created_at').in('id', envios).order('created_at', { ascending: false });
+    
+    if (errorEnvios || !dataEnvios || !dataEnvios.length) {
+        listaEnvios.innerHTML = '<p class="empty">No se pudieron cargar tus mensajes enviados.</p>';
+        return;
+    }
+
+    listaEnvios.innerHTML = dataEnvios.map(m => `
+      <div class="sent-msg ${m.respuesta ? 'replied' : ''}">
+        <p style="margin:0 0 5px; font-size:0.9rem; color:var(--dim);">Tú enviaste:</p>
+        <p style="margin:0 0 10px; font-size:0.95rem;">"${esc(m.mensaje)}"</p>
+        
+        ${m.respuesta ? `
+          <div style="background:rgba(34,211,238,.1); padding:10px; border-radius:10px; border-left:3px solid var(--cyan); margin-bottom:10px;">
+            <span style="font-size:.8rem; color:var(--cyan); font-weight:bold;">Te respondieron:</span>
+            <p style="margin:4px 0 0; font-size:.95rem;">${esc(m.respuesta)}</p>
+          </div>
+        ` : `
+          <p style="font-size:.85rem; color:#fbbf24; margin-bottom:10px;">Aún sin respuesta...</p>
+        `}
+        
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span class="time">${hace(m.created_at)}</span>
+          <a href="#respuesta/${m.id}" class="btn-sm" style="font-size:0.75rem; padding:4px 8px;">Ver enlace directo</a>
         </div>
-      ` : `
-        <div style="display:flex; gap:6px;">
-          <input type="text" id="resp_${m.id}" placeholder="Responder..." style="flex:1; background:transparent; border:1px solid var(--line); color:#fff; padding:8px; border-radius:8px;">
-          <button class="btn-sm" onclick="responderBuzon('${m.id}')" style="background:var(--cyan); color:#000;">Responder</button>
-        </div>
-      `}
-    </div>
-  `).join('');
+      </div>
+    `).join('');
+
+  } catch (e) {
+    listaEnvios.innerHTML = '<p class="empty">Error al cargar tus mensajes enviados.</p>';
+  }
 }
 
 async function responderBuzon(id) {
@@ -847,18 +956,21 @@ async function responderBuzon(id) {
   btn.disabled = true;
   btn.textContent = '...';
 
-  const { error } = await client.from('buzon').update({ respuesta: txt }).eq('id', id);
+  // Usando RPC seguro
+  const { error } = await client.rpc('responder_buzon', { id_mensaje: id, texto_respuesta: txt });
+  
   if (error) {
     toast('Error al responder.');
     btn.disabled = false;
     btn.textContent = 'Responder';
+    console.error(error);
   } else {
     toast('Respuesta guardada.');
     cargarBuzon();
   }
 }
 
-// Lógica para la vista de ENVIAR mensaje (cuando alguien entra al link de otro)
+// Lógica para la vista de ENVIAR mensaje
 let destinatarioActivo = null;
 function prepararVistaEnvio(idDestino) {
   destinatarioActivo = idDestino;
@@ -867,6 +979,7 @@ function prepararVistaEnvio(idDestino) {
   $('vistaLienzo').hidden = true;
   $('vistaBuzon').hidden = true;
   $('vistaVideo').hidden = true;
+  $('vistaVerRespuesta').hidden = true;
   $('vistaEnviarBuzon').hidden = false;
   
   document.querySelector('.tabs').style.display = 'none';
@@ -881,23 +994,70 @@ async function enviarMensajeBuzon() {
   $('btnEnviarBuzon').disabled = true;
   $('btnEnviarBuzon').textContent = 'Enviando...';
 
-  const { error } = await client.from('buzon').insert({ 
+  // Insertamos y pedimos que nos devuelva el ID generado
+  const { data, error } = await client.from('buzon').insert({ 
     destinatario: destinatarioActivo, 
     mensaje: msg 
-  });
+  }).select().single();
 
   $('btnEnviarBuzon').disabled = false;
   $('btnEnviarBuzon').textContent = 'Enviar Mensaje 🚀';
 
   if (error) {
     toast('Error al enviar. Intenta de nuevo.');
+    console.error(error);
   } else {
     $('buzonMensajeInput').value = '';
-    toast('¡Mensaje enviado con éxito! 🤫');
+    
+    // Guardar el ID del mensaje en el localStorage para que el emisor pueda ver la respuesta después
+    if (data && data.id) {
+        let envios = leer('mis_envios_buzon', []);
+        if (!envios.includes(data.id)) {
+            envios.push(data.id);
+            guardar('mis_envios_buzon', envios);
+        }
+    }
+
+    toast('¡Mensaje enviado! Puedes guardar este enlace para ver la respuesta.');
     setTimeout(() => {
-      location.href = location.origin + location.pathname;
-    }, 2000);
+      // Si el usuario es el mismo en el mismo dispositivo, lo mandamos a ver su mensaje
+      location.href = location.origin + location.pathname + (data && data.id ? '#respuesta/' + data.id : '');
+    }, 2500);
   }
+}
+
+// Lógica para VER LA RESPUESTA (El emisor)
+async function cargarRespuestaEnviada(idMensaje) {
+    document.body.classList.remove('video-mode');
+    $('vistaConf').hidden = true;
+    $('vistaLienzo').hidden = true;
+    $('vistaBuzon').hidden = true;
+    $('vistaVideo').hidden = true;
+    $('vistaEnviarBuzon').hidden = true;
+    $('vistaVerRespuesta').hidden = false;
+    
+    document.querySelector('.tabs').style.display = 'none';
+    document.querySelector('.sub').textContent = 'Buscando tu mensaje...';
+
+    const { data, error } = await client.from('buzon').select('mensaje, respuesta').eq('id', idMensaje).single();
+
+    if (error || !data) {
+        $('verMsgOriginal').textContent = "No se encontró el mensaje o fue eliminado.";
+        document.querySelector('.sub').textContent = 'Error';
+        return;
+    }
+
+    document.querySelector('.sub').textContent = 'Aquí puedes ver si te han respondido.';
+    $('verMsgOriginal').textContent = `"${data.mensaje}"`;
+
+    if (data.respuesta) {
+        $('verRespuestaBox').style.display = 'block';
+        $('verSinRespuesta').style.display = 'none';
+        $('verMsgRespuesta').textContent = `"${data.respuesta}"`;
+    } else {
+        $('verRespuestaBox').style.display = 'none';
+        $('verSinRespuesta').style.display = 'block';
+    }
 }
 
 // --- INICIO Y RUTEO DEL BUZÓN ---
@@ -908,6 +1068,12 @@ function verificarRuta() {
     if (id) {
       prepararVistaEnvio(id);
       return true; 
+    }
+  } else if (hash.startsWith('#respuesta/')) {
+    const id = hash.replace('#respuesta/', '');
+    if (id) {
+      cargarRespuestaEnviada(id);
+      return true;
     }
   } else if (hash === '#buzon') {
     tab('buzon');
@@ -1029,6 +1195,21 @@ client.channel('muro')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'respuestas' }, recargar)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'anuncio' }, cargarAnuncio)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'pixeles' }, pl => { if (pl.eventType === 'DELETE') recLienzo(); else if (pl.new) poner(pl.new.x, pl.new.y, pl.new.c, pl.new.updated_at); })
+  // NUEVO: Tiempo real para el buzón
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'buzon' }, payload => {
+    if (payload.new.destinatario === leer('mi_buzon_id', null)) {
+      toast('¡Tienes un mensaje nuevo en tu buzón! 💌');
+      if (!$('vistaBuzon').hidden) cargarBuzon();
+    }
+  })
+  .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'buzon' }, payload => {
+    const envios = leer('mis_envios_buzon', []);
+    if (envios.includes(payload.new.id) && payload.new.respuesta) {
+       toast('¡Te han respondido a un mensaje anónimo!');
+       if (!$('vistaBuzon').hidden) cargarBuzon();
+       if (!$('vistaVerRespuesta').hidden) cargarRespuestaEnviada(payload.new.id);
+    }
+  })
   .subscribe();
 
 
@@ -1134,7 +1315,7 @@ async function initVideoApp() {
   ablyInstance = new Ably.Realtime(ABLY_SECRET);
   networkingChannel = ablyInstance.channels.get('recreo-match');
   
-  peer = new Peer(); // Esto se conectará a 0.peerjs.com, ahora permitido por la CSP
+  peer = new Peer(); 
   peer.on('open', id => {
     ['online-dot', 'landing-dot'].forEach(x => $(x).classList.add('on'));
     try { networkingChannel.presence.enter({ uid: id }); } catch (e) {}
