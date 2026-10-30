@@ -5,15 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#09090b">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src https://rutohcsjlmfqgtflatrg.supabase.co wss://rutohcsjlmfqgtflatrg.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'">
+<!-- CSP actualizado para permitir Ably y PeerJS -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.ably.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src https://rutohcsjlmfqgtflatrg.supabase.co wss://rutohcsjlmfqgtflatrg.supabase.co wss://*.ably.io https://*.ably.io; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="description" content="Confesiones anónimas. Lee, comenta y reacciona.">
 <meta property="og:title" content="🤫 Confesionario">
 <meta property="og:description" content="Confesiones anónimas. Lee, comenta y reacciona.">
 <meta property="og:type" content="website">
-<title>Confesionario</title>
+<title>Confesionario & AsdTV</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🤫%3C/text%3E%3C/svg%3E">
 <link rel="manifest" href="manifest.json">
+<!-- Fuentes y Scripts para el Videochat -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4"></script>
+
 <style>
 :root{--bg:#05060f;--glass:rgba(14,16,34,.55);--line:rgba(148,163,255,.14);--cyan:#22d3ee;--accent:#8b5cf6;--pink:#f472b6;--glow:rgba(34,211,238,.35);--ok:#34d399;--ok-bg:rgba(52,211,153,.1);--txt:#eef2ff;--dim:#8b93b8}
 *{box-sizing:border-box}
@@ -133,7 +140,7 @@ h1{text-shadow:0 0 60px rgba(139,92,246,.35)}.msg{line-height:1.62}
 [data-theme=light] .bg::before{opacity:.45}[data-theme=light] .bg::after{opacity:.5}
 [data-theme=light] .btn-sm{background:rgba(70,80,160,.07);border-color:rgba(70,80,160,.2)}
 [data-theme=light] .modal-overlay{background:rgba(220,225,250,.8)}
-.tabs{display:inline-flex;gap:4px;padding:4px;margin-top:18px;background:var(--glass);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(14px)}
+.tabs{display:inline-flex;gap:4px;padding:4px;margin-top:18px;background:var(--glass);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(14px);flex-wrap:wrap;justify-content:center}
 .tabs button{background:none;border:none;color:var(--dim);padding:9px 18px;border-radius:12px;font-weight:700;cursor:pointer;transition:.25s}
 .tabs button[aria-selected=true]{background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;box-shadow:0 6px 20px -8px var(--glow)}
 .av{width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;font-size:.8rem;font-weight:800;color:#fff;background:linear-gradient(135deg,hsl(var(--h) 80% 55%),hsl(calc(var(--h) + 40) 80% 42%))}
@@ -155,7 +162,85 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
 .zb button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(10px);color:var(--txt);font-size:18px;cursor:pointer}
 .zb button:hover{border-color:var(--cyan)}
 .lbtns{display:flex;gap:8px}.lbtns .btn-sm{flex:1}
-@media (prefers-reduced-motion:no-preference){#vistaConf:not([hidden]),#vistaLienzo:not([hidden]){animation:vt .4s cubic-bezier(.16,1,.3,1)}@keyframes vt{from{opacity:0;transform:translateY(10px)}}}
+@media (prefers-reduced-motion:no-preference){#vistaConf:not([hidden]),#vistaLienzo:not([hidden]),#vistaBuzon:not([hidden]),#vistaEnviarBuzon:not([hidden]),#vistaVideo:not([hidden]){animation:vt .4s cubic-bezier(.16,1,.3,1)}@keyframes vt{from{opacity:0;transform:translateY(10px)}}}
+/* Nuevos estilos para el Buzón */
+.link-box { display: flex; gap: 8px; margin-bottom: 20px; background: rgba(5,6,15,.8); padding: 10px; border-radius: 12px; border: 1px solid var(--cyan); align-items: center; }
+.link-box input { flex: 1; background: transparent; border: none; color: var(--cyan); font-weight: bold; font-size: .9rem; outline: none; text-align: center; }
+
+/* ========================================================= */
+/* ESTILOS FUTURISTAS PARA EL VIDEOCHAT (ASDTV)              */
+/* ========================================================= */
+#vistaVideo { font-family: 'Poppins', sans-serif; }
+.video-wrapper { display: flex; flex-direction: column; height: 75vh; max-height: 800px; background: #0a0c10; border-radius: 22px; overflow: hidden; border: 1px solid rgba(34,211,238,0.3); box-shadow: 0 0 40px -10px rgba(34,211,238,0.2); position: relative;}
+.video-top { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; background: rgba(14,16,34,0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+.video-logo { font-size: 20px; font-weight: 700; color: var(--amber, #ffa500); letter-spacing: -.5px; }
+.video-logo b { color: #fff; }
+.video-top-right { display: flex; align-items: center; gap: 10px; }
+.v-online { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #8c95a8; }
+.v-dot { width: 8px; height: 8px; border-radius: 50%; background: #555; transition: 0.3s; }
+.v-dot.on { background: #1fc46b; box-shadow: 0 0 10px #1fc46b; }
+.v-streak { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 99px; font-weight: 700; font-size: 12px; background: #242a37; border: 1px solid #2c3342; transition: .4s; }
+.lvl-plata{background:linear-gradient(45deg,#bdc3c7,#2c3e50);border-color:#bdc3c7}
+.lvl-bronce{background:linear-gradient(45deg,#cd7f32,#8b4513);border-color:#cd7f32}
+.lvl-oro{background:linear-gradient(45deg,#f1c40f,#f39c12);color:#000;box-shadow:0 0 14px #f1c40f}
+.lvl-diamante{background:linear-gradient(45deg,#00d2ff,#3a7bd5);box-shadow:0 0 16px #00d2ff}
+.lvl-esmeralda{background:linear-gradient(45deg,#2ecc71,#27ae60);box-shadow:0 0 14px #2ecc71}
+.lvl-maestro{background:linear-gradient(45deg,#9b59b6,#8e44ad);box-shadow:0 0 14px #9b59b6}
+.lvl-leyenda{background:linear-gradient(90deg,#f00,#f0f,#00f,#0ff);background-size:400% auto;animation:ray 3s linear infinite;border:2px solid #fff}
+@keyframes ray{50%{background-position:100% 50%}}
+
+.v-stage { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 250px; gap: 10px; padding: 10px; }
+@media (max-width: 600px) { .v-stage { grid-template-columns: 1fr; grid-template-rows: 1fr 150px; } }
+
+.v-remote { position: relative; background: #000; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); min-height: 0; box-shadow: inset 0 0 50px rgba(0,0,0,0.8); }
+#peer-video { width: 100%; height: 100%; object-fit: cover; background: #050505; }
+.v-pip { position: absolute; right: 12px; top: 12px; width: 25%; max-width: 120px; min-width: 80px; aspect-ratio: 3/4; border-radius: 12px; overflow: hidden; border: 2px solid rgba(34,211,238,0.5); background: #111; box-shadow: 0 6px 20px rgba(0,0,0,0.7); z-index: 5; transition: 0.3s; }
+#local-view { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+.v-pip.cam-off #local-view { opacity: 0; }
+.v-pip.cam-off::after { content:"Sin cámara"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 10px; color: #8c95a8; text-align: center; }
+.v-fs { position: absolute; left: 12px; top: 12px; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,0.6); font-size: 14px; z-index: 5; color: #fff; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; backdrop-filter: blur(4px); }
+.v-pill { position: absolute; left: 12px; bottom: 12px; display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 99px; background: rgba(0,0,0,0.7); font-size: 11px; backdrop-filter: blur(6px); z-index: 5; border: 1px solid rgba(255,255,255,0.1); }
+.v-overlay { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: rgba(10,12,17,0.9); z-index: 4; text-align: center; padding: 20px; backdrop-filter: blur(8px); }
+.v-overlay.show { display: flex; }
+.v-spin { width: 46px; height: 46px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--cyan); border-bottom-color: var(--pink); animation: sp 1s linear infinite; }
+@keyframes sp { to { transform: rotate(360deg) } }
+.v-overlay p { font-weight: 600; font-size: 14px; margin: 0; }
+.v-overlay small { color: #8c95a8; font-size: 12px; }
+
+.v-chat { display: flex; flex-direction: column; min-height: 0; background: rgba(14,16,34,0.6); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
+.v-chat-head { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 600; font-size: 12px; display: flex; justify-content: space-between; color: #fff; }
+.v-chat-head span { color: var(--cyan); font-weight: 400; }
+#v-log { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.v-m { max-width: 85%; padding: 6px 10px; border-radius: 12px; line-height: 1.3; word-break: break-word; }
+.v-m.me { align-self: flex-end; background: var(--blue, #2f80ff); border-bottom-right-radius: 4px; color: #fff; }
+.v-m.them { align-self: flex-start; background: rgba(255,255,255,0.1); border-bottom-left-radius: 4px; color: #fff; }
+.v-m.sys { align-self: center; background: none; color: #8c95a8; font-size: 11px; text-align: center; max-width: 100%; }
+.v-composer { display: flex; gap: 6px; padding: 8px; border-top: 1px solid rgba(255,255,255,0.05); }
+.v-composer input { flex: 1; min-width: 0; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 12px; font-size: 13px; outline: 0; color: #fff; }
+.v-composer input:focus { border-color: var(--cyan); }
+.v-send { width: 36px; border-radius: 10px; background: var(--cyan); color: #000; font-size: 14px; font-weight: bold; }
+
+.v-bar { flex: none; display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(14,16,34,0.8); border-top: 1px solid rgba(255,255,255,0.05); }
+.v-ic { flex: none; width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 18px; transition: 0.15s; color: #fff; display: grid; place-items: center; }
+.v-ic:hover { background: rgba(255,255,255,0.15); border-color: var(--cyan); }
+.v-ic.off { background: var(--red, #ff4d4f); border-color: var(--red, #ff4d4f); }
+.v-go { flex: 1; height: 44px; border-radius: 12px; font-weight: 700; font-size: 15px; background: linear-gradient(135deg, #06b6d4, #8b5cf6); color: #fff; transition: 0.15s; border: none; cursor: pointer; box-shadow: 0 4px 15px rgba(34,211,238,0.3); }
+.v-go.next { background: linear-gradient(135deg, #f59e0b, #ef4444); box-shadow: 0 4px 15px rgba(239,68,68,0.3); }
+.v-stop { height: 44px; padding: 0 15px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-weight: 600; color: #fff; cursor: pointer; }
+.v-stop:hover { background: #ff4d4f; border-color: #ff4d4f; }
+.v-ic:active, .v-go:active, .v-stop:active { transform: scale(0.96); }
+
+.v-landing { position: absolute; inset: 0; z-index: 10; background: rgba(10,12,17,0.95); display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); border-radius: 22px; }
+.v-card { width: 100%; max-width: 340px; background: rgba(20,25,35,0.9); border: 1px solid rgba(34,211,238,0.3); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+.v-card .video-logo { font-size: 32px; }
+.v-card h2 { font-size: 16px; font-weight: 600; margin: 0; color: #fff; }
+.v-card p { color: #8c95a8; font-size: 12px; line-height: 1.4; margin: 0; }
+.v-field { display: flex; flex-direction: column; gap: 4px; text-align: left; }
+.v-field label { font-size: 12px; font-weight: 500; color: #8c95a8; }
+.v-field input { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 12px; font-size: 13px; outline: 0; color: #fff; }
+.v-field input:focus { border-color: var(--cyan); }
+.v-field small { color: #8c95a8; font-size: 10px; }
+.v-card .v-go { width: 100%; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -169,9 +254,17 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
     <div><span class="live"><span class="dot"></span> En vivo</span><span class="modo" id="modoAdmin" hidden>🛡️ Modo admin</span></div>
     <h1><span aria-hidden="true">🤫</span> <span class="grad">Confesionario</span></h1>
     <p class="sub">Lo que no te animas a decir, dilo aquí.</p>
-    <nav class="tabs" role="tablist"><button role="tab" id="tab-conf" aria-selected="true" onclick="tab('conf')">💬 Confesiones</button><button role="tab" id="tab-lienzo" aria-selected="false" onclick="tab('lienzo')">🎨 Lienzo</button></nav>
+    
+    <!-- PESTAÑAS ACTUALIZADAS -->
+    <nav class="tabs" role="tablist">
+      <button role="tab" id="tab-conf" aria-selected="true" onclick="tab('conf')">💬 Confesiones</button>
+      <button role="tab" id="tab-buzon" aria-selected="false" onclick="tab('buzon')">📥 Mi Buzón</button>
+      <button role="tab" id="tab-lienzo" aria-selected="false" onclick="tab('lienzo')">🎨 Lienzo</button>
+      <button role="tab" id="tab-video" aria-selected="false" onclick="tab('video')">📹 Videochat</button>
+    </nav>
   </header>
 
+  <!-- VISTA: CONFESIONES -->
   <div id="vistaConf">
   <section class="post-box">
     <label for="mainIn" class="hint">Tu confesión</label>
@@ -196,6 +289,47 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
   <section id="muro" aria-live="polite"><div class="skeleton"></div><div class="skeleton"></div></section>
   <div style="text-align:center"><button class="btn-sm" id="btnMas" onclick="cargarMas()" hidden>Cargar más</button></div>
   </div>
+
+  <!-- VISTA: MI BUZÓN -->
+  <div id="vistaBuzon" hidden>
+    <section class="post-box" id="buzonSetup">
+      <h2 class="lt">📥 Tu Buzón Anónimo</h2>
+      <p class="hint" style="margin-bottom:20px">Comparte este link en tus historias de Instagram, TikTok o WhatsApp. Cualquiera que entre podrá dejarte un mensaje secreto y tú podrás responderle aquí.</p>
+      
+      <div id="buzonSinCrear">
+        <button class="btn-post btn-wide" onclick="crearMiBuzon()">✨ Crear mi link de preguntas</button>
+      </div>
+
+      <div id="buzonCreado" hidden>
+        <div class="link-box">
+          <input type="text" id="miLinkBuzon" readonly onclick="this.select()">
+          <button class="btn-sm" onclick="copiarLinkBuzon()">Copiar</button>
+        </div>
+        <button class="btn-post btn-wide" onclick="compartirLinkBuzon()">Compartir en Redes 📲</button>
+        <hr style="border-color:var(--line); margin: 20px 0;">
+        <h3 style="margin:0 0 10px; font-size:1.1rem;">Mensajes recibidos</h3>
+        <div id="listaBuzon"><p class="empty">Aún no tienes mensajes.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- VISTA: ENVIAR A UN BUZÓN -->
+  <div id="vistaEnviarBuzon" hidden>
+    <section class="post-box" style="text-align:center;">
+      <div style="font-size:3rem; margin-bottom:10px;">💌</div>
+      <h2 style="margin:0 0 5px;">Envíale un mensaje anónimo</h2>
+      <p class="hint" style="margin-bottom:20px;">Esta persona no sabrá quién eres. Sé sincero o pregúntale lo que quieras.</p>
+      
+      <textarea id="buzonMensajeInput" maxlength="300" placeholder="Escribe tu mensaje secreto aquí..." style="text-align:left;"></textarea>
+      <button class="btn-post btn-wide" id="btnEnviarBuzon" onclick="enviarMensajeBuzon()">Enviar Mensaje 🚀</button>
+      
+      <div style="margin-top: 20px;">
+        <a href="./" class="btn-sm" style="display:inline-block; text-decoration:none;">Ir a la app principal</a>
+      </div>
+    </section>
+  </div>
+
+  <!-- VISTA: LIENZO -->
   <div id="vistaLienzo" hidden>
     <section class="post-box">
       <h2 class="lt">🎨 Lienzo colectivo</h2>
@@ -204,7 +338,6 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
         <div class="zb"><button onclick="zoomBtn(1.5)" aria-label="Acercar">＋</button><button onclick="zoomBtn(1/1.5)" aria-label="Alejar">−</button><button onclick="zoomReset()" aria-label="Restablecer vista">⤢</button></div></div>
       <div class="lhud"><span id="coord">–</span><span id="cuenta"></span><span id="espera"></span></div>
       
-      <!-- PALETA MEJORADA: 32 colores + selector libre -->
       <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
         <div id="paleta" class="paleta" style="margin-bottom:0; flex:1; grid-template-columns:repeat(8,1fr)"></div>
         <input type="color" id="picker" value="#e50000" style="width:45px; height:45px; padding:0; border:1px solid var(--line); border-radius:10px; cursor:pointer; background:transparent;" aria-label="Elegir cualquier color">
@@ -213,9 +346,84 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
       <div class="lbtns"><button class="btn-sm" onclick="repetir()">▶ Ver cómo se formó</button><button class="btn-sm" onclick="bajarLienzo()">Descargar ⬇️</button></div>
     </section>
   </div>
-  <footer>Confesionario</footer>
+
+  <!-- VISTA: VIDEOCHAT (ASDTV) -->
+  <div id="vistaVideo" hidden>
+    <div class="video-wrapper">
+      
+      <!-- HEADER ASDTV -->
+      <header class="video-top">
+        <div class="video-logo">Asd<b>TV</b></div>
+        <div class="video-top-right">
+          <div class="v-online"><span class="v-dot" id="online-dot"></span><span><b id="online-count">–</b> <span>en línea</span></span></div>
+          <div class="v-streak lvl-bronce" id="streak" title="Tu racha"><span id="streak-ico">🔥</span><span id="streak-num">0</span></div>
+        </div>
+      </header>
+
+      <!-- ESCENARIO -->
+      <main class="v-stage">
+        <section class="v-remote" id="remote">
+          <video id="peer-video" autoplay playsinline></video>
+          <button class="v-fs" onclick="toggleFullscreen()" title="Pantalla completa">⛶</button>
+          <div class="v-pip" id="pip"><video id="local-view" autoplay muted playsinline></video></div>
+          <div class="v-pill"><span class="v-dot" id="state-dot"></span><span id="state-label">Desconectado</span></div>
+          
+          <div class="v-overlay" id="searching">
+            <div class="v-spin"></div>
+            <p id="search-text">Buscando a alguien…</p>
+            <small id="search-sub"></small>
+          </div>
+          <div class="v-overlay" id="idle">
+            <p>Chat detenido</p>
+            <small>Pulsa Comenzar para conocer a alguien nuevo.</small>
+          </div>
+        </section>
+
+        <!-- CHAT -->
+        <aside class="v-chat">
+          <div class="v-chat-head">Chat <span id="common-tags"></span></div>
+          <div id="v-log" aria-live="polite"></div>
+          <div class="v-composer">
+            <input id="msg" type="text" maxlength="300" placeholder="Mensaje..." autocomplete="off" disabled>
+            <button class="v-send" id="send" onclick="sendMessage()" aria-label="Enviar" disabled>➤</button>
+          </div>
+        </aside>
+      </main>
+
+      <!-- CONTROLES -->
+      <footer class="v-bar">
+        <button class="v-stop" id="stop" onclick="stopChat()" hidden>Parar</button>
+        <button class="v-go" id="go" onclick="mainAction()">Comenzar</button>
+        <button class="v-ic" id="mic" onclick="toggleMic()" title="Micrófono">🎤</button>
+        <button class="v-ic" id="cam" onclick="toggleCam()" title="Cámara">📷</button>
+        <button class="v-ic" onclick="rotateCamera()" title="Girar cámara">🔄</button>
+        <button class="v-ic warn" onclick="reportAction()" title="Reportar">⚠️</button>
+      </footer>
+
+      <!-- LANDING (PANTALLA DE INICIO DEL VIDEOCHAT) -->
+      <div class="v-landing" id="v-landing">
+        <div class="v-card">
+          <div class="video-logo">Asd<b>TV</b></div>
+          <h2>Videochat al azar</h2>
+          <p>Conecta por video con alguien nuevo en un clic. Sin registro.</p>
+          <div class="v-field">
+            <label for="tags">Intereses (opcional)</label>
+            <input id="tags" type="text" placeholder="música, fútbol, anime" maxlength="80" autocomplete="off">
+            <small>Separados por comas.</small>
+          </div>
+          <div class="err" id="landing-err" hidden style="color:var(--red); font-size:12px;"></div>
+          <button class="v-go" id="start" onclick="beginFromLanding()">Comenzar</button>
+          <div class="v-online" style="justify-content:center;"><span class="v-dot" id="landing-dot"></span><span><b id="landing-count">–</b> personas en línea</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  
+  <footer>Confesionario &copy; 2024</footer>
 </main>
 
+<!-- PANEL ADMIN -->
 <div id="panelAdmin" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Panel de administración">
   <div class="modal-card">
     <h3 style="margin-top:0">⚙️ Administración</h3>
@@ -249,7 +457,6 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
 <div id="toast" role="status"></div>
 
 <script>
-// La clave "anon" es pública por diseño: la seguridad real está en las políticas RLS (supabase_setup.sql + supabase_v2.sql).
 if (typeof supabase === 'undefined') { document.body.insertAdjacentHTML('afterbegin', '<p style="padding:40px;text-align:center">No se pudo cargar el sitio. Recarga la página.</p>'); throw new Error('supabase-js no cargó'); }
 const client = supabase.createClient(
   'https://rutohcsjlmfqgtflatrg.supabase.co',
@@ -417,7 +624,7 @@ async function cargarAnuncio() {
 }
 function cerrarAlerta() { sessionStorage.setItem('anuncio_cerrado', anuncioActual); $('globalAlert').style.display = 'none'; }
 
-// --- ADMIN (Supabase Auth; los permisos reales los dan las políticas RLS) ---
+// --- ADMIN ---
 client.auth.onAuthStateChange((_e, s) => {
   const nuevo = !!s;
   if (nuevo === esAdmin) return;
@@ -520,13 +727,35 @@ window.addEventListener('offline', () => $('netbar').classList.add('show'));
 window.addEventListener('online', () => { $('netbar').classList.remove('show'); cargarDatos(); cargarAnuncio(); });
 if (!navigator.onLine) $('netbar').classList.add('show');
 
-// --- PESTAÑAS ---
+// --- PESTAÑAS Y RUTEO ---
 function tab(n) {
-  $('vistaConf').hidden = n !== 'conf'; $('vistaLienzo').hidden = n !== 'lienzo';
-  $('tab-conf').setAttribute('aria-selected', n === 'conf'); $('tab-lienzo').setAttribute('aria-selected', n === 'lienzo');
-  history.replaceState(null, '', n === 'lienzo' ? '#lienzo' : location.pathname + location.search);
+  // Si salimos de la pestaña de video mientras hay una llamada, la cortamos por privacidad y datos
+  if (state !== 'idle' && n !== 'video') {
+    stopChat();
+  }
+
+  $('vistaConf').hidden = n !== 'conf'; 
+  $('vistaLienzo').hidden = n !== 'lienzo';
+  $('vistaBuzon').hidden = n !== 'buzon';
+  $('vistaEnviarBuzon').hidden = true; 
+  $('vistaVideo').hidden = n !== 'video';
+  
+  $('tab-conf').setAttribute('aria-selected', n === 'conf'); 
+  $('tab-lienzo').setAttribute('aria-selected', n === 'lienzo');
+  $('tab-buzon').setAttribute('aria-selected', n === 'buzon');
+  $('tab-video').setAttribute('aria-selected', n === 'video');
+  
+  if (n === 'buzon') cargarBuzon();
+  if (n === 'video') initVideoApp(); // Iniciar cámara solo cuando entran aquí
+
+  let hash = '';
+  if (n === 'lienzo') hash = '#lienzo';
+  else if (n === 'buzon') hash = '#buzon';
+  else if (n === 'video') hash = '#video';
+  
+  history.replaceState(null, '', hash ? hash : location.pathname + location.search);
 }
-if (location.hash === '#lienzo') tab('lienzo');
+
 function azar() {
   const c = [...document.querySelectorAll('.card')]; if (!c.length) return toast('Aún no hay confesiones.');
   const el = c[Math.floor(Math.random() * c.length)]; el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -536,10 +765,159 @@ const hue = t => [...t].reduce((a, c) => a + c.charCodeAt(0) * 7, 0) % 360;
 const FR = ['¿Qué quieres confesar hoy?', 'Algo que nunca le contaste a nadie…', 'Tu secreto más gracioso…', 'Lo que pensaste pero no dijiste…'];
 $('mainIn').placeholder = FR[Math.floor(Math.random() * FR.length)];
 
+// --- LÓGICA DEL BUZÓN PERSONAL ---
+function crearMiBuzon() {
+  const id = Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10);
+  guardar('mi_buzon_id', id);
+  actualizarUIBuzon();
+  toast('¡Buzón creado! Comparte tu link.');
+}
+function actualizarUIBuzon() {
+  const miId = leer('mi_buzon_id', null);
+  if (miId) {
+    $('buzonSinCrear').hidden = true;
+    $('buzonCreado').hidden = false;
+    const url = location.origin + location.pathname + '#buzon/' + miId;
+    $('miLinkBuzon').value = url;
+  } else {
+    $('buzonSinCrear').hidden = false;
+    $('buzonCreado').hidden = true;
+  }
+}
+function copiarLinkBuzon() {
+  $('miLinkBuzon').select();
+  document.execCommand('copy');
+  toast('Link copiado al portapapeles 🔗');
+}
+function compartirLinkBuzon() {
+  const url = $('miLinkBuzon').value;
+  if (navigator.share) {
+    navigator.share({ title: 'Mi buzón anónimo', text: '¡Mándame un mensaje anónimo aquí!', url: url }).catch(console.error);
+  } else {
+    copiarLinkBuzon();
+    toast('Link copiado. ¡Pégalo en tus historias!');
+  }
+}
+
+async function cargarBuzon() {
+  actualizarUIBuzon();
+  const miId = leer('mi_buzon_id', null);
+  if (!miId) return;
+
+  const lista = $('listaBuzon');
+  lista.innerHTML = '<div class="skeleton" style="height:80px"></div>';
+
+  const { data, error } = await client.from('buzon').select('*').eq('destinatario', miId).order('created_at', { ascending: false });
+  
+  if (error) { lista.innerHTML = '<p class="empty">Error al cargar mensajes.</p>'; return; }
+  if (!data.length) { lista.innerHTML = '<p class="empty">Aún no tienes mensajes. ¡Comparte tu link en tus redes!</p>'; return; }
+
+  lista.innerHTML = data.map(m => `
+    <div class="card" style="padding:15px; margin-bottom:10px; background:rgba(5,6,15,.4)">
+      <p class="msg" style="font-size:1rem; margin-bottom:10px;">"${esc(m.mensaje)}"</p>
+      <p class="time" style="margin-bottom:10px;">${hace(m.created_at)}</p>
+      ${m.respuesta ? `
+        <div style="background:rgba(34,211,238,.1); padding:10px; border-radius:10px; border-left:3px solid var(--cyan);">
+          <span style="font-size:.8rem; color:var(--cyan); font-weight:bold;">Tu respuesta:</span>
+          <p style="margin:4px 0 0; font-size:.95rem;">${esc(m.respuesta)}</p>
+        </div>
+      ` : `
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="resp_${m.id}" placeholder="Responder..." style="flex:1; background:transparent; border:1px solid var(--line); color:#fff; padding:8px; border-radius:8px;">
+          <button class="btn-sm" onclick="responderBuzon('${m.id}')" style="background:var(--cyan); color:#000;">Responder</button>
+        </div>
+      `}
+    </div>
+  `).join('');
+}
+
+async function responderBuzon(id) {
+  const txt = $('resp_' + id).value.trim();
+  if (!txt) return toast('Escribe una respuesta.');
+  
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  const { error } = await client.from('buzon').update({ respuesta: txt }).eq('id', id);
+  if (error) {
+    toast('Error al responder.');
+    btn.disabled = false;
+    btn.textContent = 'Responder';
+  } else {
+    toast('Respuesta guardada.');
+    cargarBuzon();
+  }
+}
+
+// Lógica para la vista de ENVIAR mensaje (cuando alguien entra al link de otro)
+let destinatarioActivo = null;
+function prepararVistaEnvio(idDestino) {
+  destinatarioActivo = idDestino;
+  $('vistaConf').hidden = true;
+  $('vistaLienzo').hidden = true;
+  $('vistaBuzon').hidden = true;
+  $('vistaVideo').hidden = true;
+  $('vistaEnviarBuzon').hidden = false;
+  
+  document.querySelector('.tabs').style.display = 'none';
+  document.querySelector('.sub').textContent = 'Te han dejado un buzón secreto.';
+}
+
+async function enviarMensajeBuzon() {
+  const msg = $('buzonMensajeInput').value.trim();
+  if (!msg) return toast('Escribe un mensaje primero.');
+  if (!destinatarioActivo) return;
+
+  $('btnEnviarBuzon').disabled = true;
+  $('btnEnviarBuzon').textContent = 'Enviando...';
+
+  const { error } = await client.from('buzon').insert({ 
+    destinatario: destinatarioActivo, 
+    mensaje: msg 
+  });
+
+  $('btnEnviarBuzon').disabled = false;
+  $('btnEnviarBuzon').textContent = 'Enviar Mensaje 🚀';
+
+  if (error) {
+    toast('Error al enviar. Intenta de nuevo.');
+  } else {
+    $('buzonMensajeInput').value = '';
+    toast('¡Mensaje enviado con éxito! 🤫');
+    setTimeout(() => {
+      location.href = location.origin + location.pathname;
+    }, 2000);
+  }
+}
+
+// --- INICIO Y RUTEO DEL BUZÓN ---
+function verificarRuta() {
+  const hash = location.hash;
+  if (hash.startsWith('#buzon/')) {
+    const id = hash.replace('#buzon/', '');
+    if (id) {
+      prepararVistaEnvio(id);
+      return true; 
+    }
+  } else if (hash === '#buzon') {
+    tab('buzon');
+    return false;
+  } else if (hash === '#lienzo') {
+    tab('lienzo');
+    return false;
+  } else if (hash === '#video') {
+    tab('video');
+    return false;
+  }
+  tab('conf');
+  return false;
+}
+
+window.addEventListener('hashchange', verificarRuta);
+
 // --- LIENZO COLECTIVO (estilo r/place) ---
 const N = 96, PIX_MS = 10000, lc = $('lienzo'), ctx = lc.getContext('2d'), lw = document.querySelector('.lw'), plano = $('plano');
-
-// Paleta oficial de 32 colores de r/place (hexadecimal)
 const PAL = [
   '#FFFFFF', '#E4E4E4', '#888888', '#222222',
   '#FFA7D1', '#E50000', '#E59500', '#A06A42',
@@ -550,23 +928,16 @@ const PAL = [
   '#BE0039', '#FFB470', '#FFF8B8', '#00CC78',
   '#7EED56', '#00756F', '#009EAA', '#2450A4'
 ];
-
 const pix = new Map(), ps = new Map();
-let colorSel = '#E50000'; // Color por defecto (rojo de r/place)
-let ti, tl, Z = 1, OX = 0, OY = 0, mov = 0, rep = false;
-
-// Función para seleccionar color
+let colorSel = '#E50000', ti, tl, Z = 1, OX = 0, OY = 0, mov = 0, rep = false;
 const elegir = (hex) => {
   colorSel = hex;
   document.querySelectorAll('.sw').forEach(x => x.classList.toggle('sel', x.dataset.c === hex));
   const p = $('picker'); if (p && p.value !== hex) p.value = hex;
 };
-
-// Renderizar la paleta de 32 colores
 $('paleta').innerHTML = PAL.map((c, i) => `<button class="sw${c === colorSel ? ' sel' : ''}" style="background:${c}" data-c="${c}" aria-label="Color ${i + 1}"></button>`).join('');
 $('paleta').addEventListener('click', e => { const b = e.target.closest('.sw'); if (b) elegir(b.dataset.c); });
 $('picker').addEventListener('input', e => elegir(e.target.value));
-
 const dibujar = (x, y, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, 1, 1); };
 function poner(x, y, c, t) { pix.set(y * N + x, { x, y, c, t: new Date(t || Date.now()).getTime() }); dibujar(x, y, c); $('cuenta').textContent = pix.size + ' píxeles'; }
 function encuadre() {
@@ -640,7 +1011,7 @@ async function vaciarLienzo() {
   cargarLienzo(); toast('Lienzo vaciado.');
 }
 
-// --- INICIO Y TIEMPO REAL ---
+// --- INICIO Y TIEMPO REAL SUPABASE ---
 let t;
 const recargar = () => { clearTimeout(t); t = setTimeout(cargarDatos, 400); };
 cargarDatos(); cargarAnuncio(); cargarLienzo(); iniciarEspera();
@@ -650,6 +1021,309 @@ client.channel('muro')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'anuncio' }, cargarAnuncio)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'pixeles' }, pl => { if (pl.eventType === 'DELETE') recLienzo(); else if (pl.new) poner(pl.new.x, pl.new.y, pl.new.c, pl.new.updated_at); })
   .subscribe();
+
+
+// ============================================================================
+// LOGICA DEL VIDEOCHAT (ASDTV REDISEÑADO)
+// ============================================================================
+let ablyInstance, networkingChannel;
+let peer, localStream, call, dataConn;
+let state = 'idle', facing = 'user', micOn = true, camOn = true;
+let blockList = [];
+let myTags = [], searchStart = 0, searchTimer = null, connectTimer = null, gotStream = false;
+let videoInitialized = false;
+
+const ABLY_SECRET = 'HIAY1w.x1_3_Q:8kTgjL3KPHdx8_NsMeccHEcrOI_g5NAqj76-aDBl3Fs';
+
+function beep(freq = 660, dur = 0.12) {
+  try {
+    const ctx = beep.ctx || (beep.ctx = new (window.AudioContext || window.webkitAudioContext)());
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.value = freq; g.gain.value = 0.05;
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime + dur);
+  } catch (e) {}
+}
+
+function addVMsg(text, who) {
+  const d = document.createElement('div');
+  d.className = 'v-m ' + who;
+  d.textContent = text;
+  const log = $('v-log');
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+}
+
+function parseTags(s) {
+  return [...new Set(s.toLowerCase().split(',').map(x => x.trim()).filter(Boolean))].slice(0, 6);
+}
+
+/* Racha y Niveles */
+let streakCount = parseInt(localStorage.getItem('asd_streak_v3')) || 0;
+const lastTime = () => localStorage.getItem('asd_time_v3');
+
+function checkStreak() {
+  const last = lastTime();
+  if (!last || streakCount <= 0) return;
+  const h = new Date().getHours();
+  if (h >= 0 && h < 8) return; // Tregua nocturna
+  if (Date.now() - parseInt(last) > 4 * 3600 * 1000) { streakCount = 0; saveStreak(); }
+}
+
+function saveStreak() {
+  localStorage.setItem('asd_streak_v3', streakCount);
+  localStorage.setItem('asd_time_v3', Date.now());
+  renderStreak();
+}
+
+function renderStreak() {
+  const c = $('streak');
+  const n = streakCount;
+  const lv = n >= 150 ? ['leyenda', '🌌', 'Leyenda'] : n >= 111 ? ['maestro', '🔮', 'Maestro'] :
+             n >= 81 ? ['esmeralda', '💎', 'Esmeralda'] : n >= 51 ? ['diamante', '❄️', 'Diamante'] :
+             n >= 31 ? ['oro', '👑', 'Oro'] : n >= 11 ? ['plata', '✨', 'Plata'] : ['bronce', '🔥', 'Bronce'];
+  c.className = 'v-streak lvl-' + lv[0];
+  c.title = 'Racha nivel ' + lv[2];
+  $('streak-ico').textContent = lv[1];
+  $('streak-num').textContent = n;
+}
+
+function setVState(s) {
+  state = s;
+  const connected = s === 'connected';
+  $('searching').classList.toggle('show', s === 'searching' || s === 'connecting');
+  $('idle').classList.toggle('show', s === 'idle');
+  $('stop').hidden = s === 'idle';
+  const go = $('go');
+  go.textContent = s === 'idle' ? 'Comenzar' : 'Siguiente';
+  go.classList.toggle('next', s !== 'idle');
+  $('msg').disabled = $('send').disabled = !connected;
+  $('state-dot').classList.toggle('on', connected);
+  $('state-label').textContent = connected ? 'Conectado' : s === 'idle' ? 'Desconectado' : 'Buscando…';
+}
+
+// Inicialización perezosa (solo cuando el usuario pisa la pestaña)
+async function initVideoApp() {
+  if (videoInitialized) return;
+  videoInitialized = true;
+
+  checkStreak(); renderStreak(); setVState('idle');
+  setInterval(checkStreak, 60000);
+
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio: true });
+    $('local-view').srcObject = localStream;
+  } catch (e) {
+    const err = $('landing-err');
+    err.hidden = false;
+    err.textContent = 'No se pudo acceder a la cámara o el micrófono. Permite el acceso en el navegador y recarga la página.';
+    $('start').disabled = true;
+    return;
+  }
+
+  // Iniciar Ably y PeerJS
+  ablyInstance = new Ably.Realtime(ABLY_SECRET);
+  networkingChannel = ablyInstance.channels.get('recreo-match');
+  
+  peer = new Peer();
+  peer.on('open', id => {
+    ['online-dot', 'landing-dot'].forEach(x => $(x).classList.add('on'));
+    try { networkingChannel.presence.enter({ uid: id }); } catch (e) {}
+  });
+  peer.on('error', e => { console.warn('Peer:', e.type); if (state === 'connecting') retrySearch(); });
+
+  peer.on('call', incoming => {
+    if (state !== 'searching' || blockList.includes(incoming.peer)) { incoming.close(); return; }
+    setVState('connecting');
+    call = incoming;
+    incoming.answer(localStream);
+    attach(incoming);
+  });
+
+  peer.on('connection', c => { dataConn = c; bindData(c); });
+
+  networkingChannel.subscribe('buscando', msg => {
+    const { uid, tags = [] } = msg.data || {};
+    if (!uid || state !== 'searching' || uid === peer.id || blockList.includes(uid)) return;
+    if (peer.id < uid) return; 
+    const common = tags.filter(t => myTags.includes(t));
+    const relaxed = Date.now() - searchStart > 12000;
+    if (!myTags.length || !tags.length || common.length || relaxed) startCall(uid, common);
+  });
+
+  const refreshCount = () => networkingChannel.presence.get((err, list) => {
+    if (err || !list) return;
+    const n = new Set(list.map(m => m.clientId)).size;
+    $('online-count').textContent = $('landing-count').textContent = n;
+  });
+  try { networkingChannel.presence.subscribe(refreshCount); refreshCount(); } catch (e) {}
+}
+
+function beginFromLanding() {
+  myTags = parseTags($('tags').value);
+  $('v-landing').hidden = true;
+  startSearch();
+  $('msg').focus();
+}
+
+function startSearch() {
+  if (!peer || !peer.id) { toast('Conectando con el servidor, espera un momento…'); return; }
+  $('v-log').innerHTML = '';
+  setVState('searching');
+  searchStart = Date.now();
+  $('search-text').textContent = 'Buscando a alguien…';
+  $('search-sub').textContent = myTags.length ? 'Intereses: ' + myTags.join(', ') : '';
+  const ping = () => {
+    if (state !== 'searching') return;
+    networkingChannel.publish('buscando', { uid: peer.id, tags: myTags });
+    if (myTags.length && Date.now() - searchStart > 12000) $('search-sub').textContent = 'Ampliando la búsqueda a cualquier persona…';
+  };
+  clearInterval(searchTimer);
+  ping();
+  searchTimer = setInterval(ping, 2500);
+}
+
+function startCall(targetId, common) {
+  setVState('connecting');
+  call = peer.call(targetId, localStream);
+  dataConn = peer.connect(targetId);
+  bindData(dataConn);
+  attach(call, common);
+}
+
+function attach(c, common) {
+  gotStream = false;
+  clearTimeout(connectTimer);
+  connectTimer = setTimeout(() => { if (!gotStream) retrySearch(); }, 9000);
+  c.on('stream', remote => {
+    if (gotStream) return;
+    gotStream = true;
+    clearTimeout(connectTimer);
+    $('peer-video').srcObject = remote;
+    setVState('connected');
+    clearInterval(searchTimer);
+    streakCount++; saveStreak();
+    beep(740);
+    addVMsg(common && common.length ? 'Conectado. Intereses: ' + common.join(', ') : 'Conectado. ¡Saluda!', 'sys');
+    $('common-tags').textContent = common && common.length ? '#' + common.join(' #') : '';
+  });
+  const gone = () => { if (call === c) partnerLeft(); };
+  c.on('close', gone);
+  c.on('error', gone);
+}
+
+function bindData(c) {
+  c.on('data', d => {
+    if (d && d.t === 'msg' && typeof d.text === 'string') { addVMsg(d.text.slice(0, 300), 'them'); beep(520, 0.08); }
+  });
+}
+
+function endSession() {
+  clearTimeout(connectTimer);
+  const c = call; call = null;
+  if (c) { try { c.close(); } catch (e) {} }
+  if (dataConn) { try { dataConn.close(); } catch (e) {} dataConn = null; }
+  $('peer-video').srcObject = null;
+  $('common-tags').textContent = '';
+}
+
+function partnerLeft() {
+  endSession();
+  addVMsg('El desconocido se desconectó.', 'sys');
+  startSearch();
+}
+
+function retrySearch() {
+  endSession();
+  if (state !== 'idle') startSearch();
+}
+
+function blockTemp(id, ms) {
+  blockList.push(id);
+  setTimeout(() => { blockList = blockList.filter(x => x !== id); }, ms);
+}
+
+function mainAction() {
+  if (state === 'idle') { startSearch(); return; }
+  if (call) blockTemp(call.peer, 30000);
+  endSession();
+  startSearch();
+}
+
+function stopChat() {
+  clearInterval(searchTimer);
+  endSession();
+  setVState('idle');
+  $('v-log').innerHTML = '';
+}
+
+function sendMessage() {
+  const i = $('msg'), text = i.value.trim();
+  if (!text || !dataConn || !dataConn.open) return;
+  dataConn.send({ t: 'msg', text });
+  addVMsg(text, 'me');
+  i.value = '';
+}
+
+function reportAction() {
+  if (!call) { toast('No hay nadie a quien reportar.'); return; }
+  blockTemp(call.peer, 10 * 60 * 1000);
+  toast('Usuario reportado y bloqueado.');
+  mainAction();
+}
+
+function toggleMic() {
+  micOn = !micOn;
+  localStream.getAudioTracks().forEach(t => t.enabled = micOn);
+  $('mic').textContent = micOn ? '🎤' : '🔇';
+  $('mic').classList.toggle('off', !micOn);
+}
+
+function toggleCam() {
+  camOn = !camOn;
+  localStream.getVideoTracks().forEach(t => t.enabled = camOn);
+  $('cam').textContent = camOn ? '📷' : '🚫';
+  $('cam').classList.toggle('off', !camOn);
+  $('pip').classList.toggle('cam-off', !camOn);
+}
+
+async function rotateCamera() {
+  const next = facing === 'user' ? 'environment' : 'user';
+  try {
+    const fresh = await navigator.mediaDevices.getUserMedia({ video: { facingMode: next }, audio: true });
+    localStream.getTracks().forEach(t => t.stop());
+    localStream = fresh;
+    facing = next;
+    localStream.getAudioTracks().forEach(t => t.enabled = micOn);
+    localStream.getVideoTracks().forEach(t => t.enabled = camOn);
+    const lv = $('local-view');
+    lv.srcObject = localStream;
+    lv.style.transform = facing === 'user' ? 'scaleX(-1)' : 'none';
+    if (call && call.peerConnection) {
+      call.peerConnection.getSenders().forEach(s => {
+        if (!s.track) return;
+        const nt = s.track.kind === 'video' ? localStream.getVideoTracks()[0] : localStream.getAudioTracks()[0];
+        if (nt) s.replaceTrack(nt);
+      });
+    }
+  } catch (e) { toast('No se pudo cambiar de cámara.'); }
+}
+
+function toggleFullscreen() {
+  const el = $('remote');
+  if (document.fullscreenElement) document.exitFullscreen();
+  else if (el.requestFullscreen) el.requestFullscreen();
+}
+
+$('msg').addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+$('tags').addEventListener('keydown', e => { if (e.key === 'Enter') beginFromLanding(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && state !== 'idle' && !document.fullscreenElement && !$('vistaVideo').hidden) mainAction();
+});
+
+// Ejecutamos el ruteo inicial
+verificarRuta();
+
 </script>
 </body>
 </html>
