@@ -133,6 +133,29 @@ h1{text-shadow:0 0 60px rgba(139,92,246,.35)}.msg{line-height:1.62}
 [data-theme=light] .bg::before{opacity:.45}[data-theme=light] .bg::after{opacity:.5}
 [data-theme=light] .btn-sm{background:rgba(70,80,160,.07);border-color:rgba(70,80,160,.2)}
 [data-theme=light] .modal-overlay{background:rgba(220,225,250,.8)}
+.tabs{display:inline-flex;gap:4px;padding:4px;margin-top:18px;background:var(--glass);border:1px solid var(--line);border-radius:16px;backdrop-filter:blur(14px)}
+.tabs button{background:none;border:none;color:var(--dim);padding:9px 18px;border-radius:12px;font-weight:700;cursor:pointer;transition:.25s}
+.tabs button[aria-selected=true]{background:linear-gradient(135deg,#06b6d4,#8b5cf6);color:#fff;box-shadow:0 6px 20px -8px var(--glow)}
+.av{width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;font-size:.8rem;font-weight:800;color:#fff;background:linear-gradient(135deg,hsl(var(--h) 80% 55%),hsl(calc(var(--h) + 40) 80% 42%))}
+.lt{margin:0 0 4px;font-size:1.3rem}.lw{position:relative;margin:12px 0;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+#lienzo{display:block;width:100%;aspect-ratio:1;image-rendering:pixelated;cursor:crosshair;touch-action:manipulation;background:#fff}
+#mira{position:absolute;border:2px solid #fff;mix-blend-mode:difference;pointer-events:none;box-sizing:border-box}
+.lhud{display:flex;justify-content:space-between;font-size:.8rem;color:var(--dim);margin-bottom:10px}
+.paleta{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:12px}
+.sw{aspect-ratio:1;border-radius:10px;border:1px solid var(--line);cursor:pointer;transition:transform .15s}
+.sw.sel{outline:2px solid var(--cyan);outline-offset:2px;transform:scale(1.1)}
+html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
+::selection{background:rgba(139,92,246,.45)}
+.msg.larga{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.lw{aspect-ratio:1;touch-action:none;user-select:none;-webkit-user-select:none;background:#fff}
+#plano{position:relative;width:100%;height:100%;transform-origin:0 0;will-change:transform}
+#lienzo{height:100%;touch-action:none}
+#rej{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .2s;background-image:linear-gradient(rgba(0,0,0,.2) calc(1px / var(--z,1)),transparent 0),linear-gradient(90deg,rgba(0,0,0,.2) calc(1px / var(--z,1)),transparent 0);background-size:calc(100% / 96) calc(100% / 96)}
+.zb{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:6px}
+.zb button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(10px);color:var(--txt);font-size:18px;cursor:pointer}
+.zb button:hover{border-color:var(--cyan)}
+.lbtns{display:flex;gap:8px}.lbtns .btn-sm{flex:1}
+@media (prefers-reduced-motion:no-preference){#vistaConf:not([hidden]),#vistaLienzo:not([hidden]){animation:vt .4s cubic-bezier(.16,1,.3,1)}@keyframes vt{from{opacity:0;transform:translateY(10px)}}}
 </style>
 </head>
 <body>
@@ -146,8 +169,10 @@ h1{text-shadow:0 0 60px rgba(139,92,246,.35)}.msg{line-height:1.62}
     <div><span class="live"><span class="dot"></span> En vivo</span><span class="modo" id="modoAdmin" hidden>🛡️ Modo admin</span></div>
     <h1><span aria-hidden="true">🤫</span> <span class="grad">Confesionario</span></h1>
     <p class="sub">Lo que no te animas a decir, dilo aquí.</p>
+    <nav class="tabs" role="tablist"><button role="tab" id="tab-conf" aria-selected="true" onclick="tab('conf')">💬 Confesiones</button><button role="tab" id="tab-lienzo" aria-selected="false" onclick="tab('lienzo')">🎨 Lienzo</button></nav>
   </header>
 
+  <div id="vistaConf">
   <section class="post-box">
     <label for="mainIn" class="hint">Tu confesión</label>
     <textarea id="mainIn" maxlength="500" placeholder="¿Qué quieres confesar hoy?"></textarea>
@@ -166,9 +191,22 @@ h1{text-shadow:0 0 60px rgba(139,92,246,.35)}.msg{line-height:1.62}
     <input type="search" id="buscar" placeholder="Buscar confesiones…" maxlength="60" aria-label="Buscar confesiones">
     <select id="orden" aria-label="Ordenar y filtrar"><option value="nuevas">Recientes</option><option value="top">Más populares</option><option value="coment">Más comentadas</option><option value="guardadas">⭐ Guardadas</option></select>
     <select id="fCat" aria-label="Filtrar por categoría"></select>
+    <button class="btn-sm" onclick="azar()" aria-label="Confesión al azar">🎲</button>
   </div>
   <section id="muro" aria-live="polite"><div class="skeleton"></div><div class="skeleton"></div></section>
   <div style="text-align:center"><button class="btn-sm" id="btnMas" onclick="cargarMas()" hidden>Cargar más</button></div>
+  </div>
+  <div id="vistaLienzo" hidden>
+    <section class="post-box">
+      <h2 class="lt">🎨 Lienzo colectivo</h2>
+      <p class="hint">Un píxel cada 10 segundos. Arrastra para mover, rueda o pellizco para acercar, clic derecho copia un color.</p>
+      <div class="lw"><div id="plano"><canvas id="lienzo" width="96" height="96" aria-label="Lienzo colectivo"></canvas><div id="rej"></div><div id="mira"></div></div>
+        <div class="zb"><button onclick="zoomBtn(1.5)" aria-label="Acercar">＋</button><button onclick="zoomBtn(1/1.5)" aria-label="Alejar">−</button><button onclick="zoomReset()" aria-label="Restablecer vista">⤢</button></div></div>
+      <div class="lhud"><span id="coord">–</span><span id="cuenta"></span><span id="espera"></span></div>
+      <div id="paleta" class="paleta"></div>
+      <div class="lbtns"><button class="btn-sm" onclick="repetir()">▶ Ver cómo se formó</button><button class="btn-sm" onclick="bajarLienzo()">Descargar ⬇️</button></div>
+    </section>
+  </div>
   <footer>Confesionario</footer>
 </main>
 
@@ -192,6 +230,7 @@ h1{text-shadow:0 0 60px rgba(139,92,246,.35)}.msg{line-height:1.62}
       <button class="btn-post btn-wide danger" onclick="resetTodo()">Vaciar muro</button>
       <button class="btn-post btn-wide alt" onclick="exportarCSV()">Exportar CSV ⬇️</button>
       <button class="btn-post btn-wide alt" onclick="depurar()">Borrar antiguas 🧹</button>
+      <button class="btn-post btn-wide danger" onclick="vaciarLienzo()">Vaciar lienzo 🎨</button>
       <button class="btn-sm btn-wide" onclick="logoutAdmin()">Cerrar sesión</button>
     </div>
     <button class="btn-sm btn-wide" onclick="cerrarAdmin()">Cerrar</button>
@@ -330,12 +369,13 @@ async function cargarDatos() {
     const rs = (resps || []).filter(r => r.confesion_id === p.id), id = Number(p.id), esA = p.autor === ADMIN;
     return `<article id="c${id}" class="card${p.oculto ? ' oculto' : ''}${esA ? ' admin-post' : ''}${vistos.has(id) ? '' : ' nuevo'}" style="--i:${Math.min(i, 8)}">
       <div class="head">
-        <div class="author">${esA ? '🛡️' : '👤'} ${esc(esA ? 'Admin' : p.autor)}
+        <div class="author"><span class="av" style="--h:${hue(p.autor || '')}">${esA ? '🛡️' : esc((p.autor || '?')[0])}</span> ${esc(esA ? 'Admin' : p.autor)}
           ${p.fijado ? '<span class="badge p">📌 Fijado</span>' : ''}${p.categoria && p.categoria !== 'general' && CATS[p.categoria] ? `<span class="badge c">${CATS[p.categoria]}</span>` : ''}${p.likes >= 5 && !esA ? '<span class="badge">🔥 TOP</span>' : ''}
           ${esAdmin && p.oculto ? '<span class="badge g">Oculto</span>' : ''}${esAdmin && p.reportes ? `<span class="badge g">🚩 ${p.reportes}</span>` : ''}</div>
         <span class="time">${hace(p.created_at)}</span>
       </div>
-      <div class="msg">${esc(p.mensaje)}</div>
+      <div class="msg${p.mensaje.length > 280 ? ' larga' : ''}">${esc(p.mensaje)}</div>
+      ${p.mensaje.length > 280 ? `<button class="link" onclick="this.previousElementSibling.classList.toggle('larga');this.textContent=this.textContent==='Leer más'?'Leer menos':'Leer más'">Leer más</button>` : ''}
       <div class="actions">
         <button class="btn-sm${id === popId ? ' pop' : ''}" onclick="darLike(${id})" ${likes.includes(id) ? 'disabled' : ''} aria-label="Me gusta">${likes.includes(id) ? '✅' : '❤️'} ${p.likes || 0}</button>
         ${reacBtns(p, id, mr)}
@@ -353,7 +393,7 @@ async function cargarDatos() {
         <input type="text" class="reply-in" maxlength="300" placeholder="Comentar algo..." aria-label="Comentar" data-id="${id}" onkeydown="responder(${id}, event)">
       </div>
     </article>`;
-  }).join('') : (busqueda || vista === 'guardadas' ? '<p class="empty">No hay resultados.</p>' : '<p class="empty">Todavía no hay confesiones. Sé la primera persona en publicar.</p>');
+  }).join('') : (busqueda || vista === 'guardadas' ? '<p class="empty">No hay resultados.</p>' : '<p class="empty">🕯️<br>Todavía no hay confesiones.<br>Sé la primera persona en publicar.</p>');
   document.querySelectorAll('.reply-in').forEach(i => { if (borradores[i.dataset.id]) i.value = borradores[i.dataset.id]; if (i.dataset.id === enfoque) i.focus(); });
   posts.forEach(p => vistos.add(Number(p.id))); popId = null;
   if (!irHecho && /^#c\d+$/.test(location.hash)) { irHecho = true; const el = $(location.hash.slice(1)); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('resalta'); } }
@@ -474,14 +514,112 @@ window.addEventListener('offline', () => $('netbar').classList.add('show'));
 window.addEventListener('online', () => { $('netbar').classList.remove('show'); cargarDatos(); cargarAnuncio(); });
 if (!navigator.onLine) $('netbar').classList.add('show');
 
+// --- PESTAÑAS ---
+function tab(n) {
+  $('vistaConf').hidden = n !== 'conf'; $('vistaLienzo').hidden = n !== 'lienzo';
+  $('tab-conf').setAttribute('aria-selected', n === 'conf'); $('tab-lienzo').setAttribute('aria-selected', n === 'lienzo');
+  history.replaceState(null, '', n === 'lienzo' ? '#lienzo' : location.pathname + location.search);
+}
+if (location.hash === '#lienzo') tab('lienzo');
+function azar() {
+  const c = [...document.querySelectorAll('.card')]; if (!c.length) return toast('Aún no hay confesiones.');
+  const el = c[Math.floor(Math.random() * c.length)]; el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  el.classList.add('resalta'); setTimeout(() => el.classList.remove('resalta'), 2500);
+}
+const hue = t => [...t].reduce((a, c) => a + c.charCodeAt(0) * 7, 0) % 360;
+const FR = ['¿Qué quieres confesar hoy?', 'Algo que nunca le contaste a nadie…', 'Tu secreto más gracioso…', 'Lo que pensaste pero no dijiste…'];
+$('mainIn').placeholder = FR[Math.floor(Math.random() * FR.length)];
+
+// --- LIENZO COLECTIVO (estilo r/place) ---
+const N = 96, PIX_MS = 10000, lc = $('lienzo'), ctx = lc.getContext('2d'), lw = document.querySelector('.lw'), plano = $('plano');
+const PAL = ['#ffffff', '#e4e4e4', '#888888', '#222222', '#ffa7d1', '#e50000', '#e59500', '#a06a42', '#e5d900', '#94e044', '#02be01', '#00d3dd', '#0083c7', '#0000ea', '#cf6ee4', '#820080'];
+const pix = new Map(), ps = new Map();
+let colorSel = 5, ti, tl, Z = 1, OX = 0, OY = 0, mov = 0, rep = false;
+const elegir = i => { colorSel = i; document.querySelectorAll('.sw').forEach(x => x.classList.toggle('sel', Number(x.dataset.c) === i)); };
+$('paleta').innerHTML = PAL.map((c, i) => `<button class="sw${i === colorSel ? ' sel' : ''}" style="background:${c}" data-c="${i}" aria-label="Color ${i + 1}"></button>`).join('');
+$('paleta').addEventListener('click', e => { const b = e.target.closest('.sw'); if (b) elegir(Number(b.dataset.c)); });
+const dibujar = (x, y, c) => { ctx.fillStyle = PAL[c] || '#fff'; ctx.fillRect(x, y, 1, 1); };
+function poner(x, y, c, t) { pix.set(y * N + x, { x, y, c, t: new Date(t || Date.now()).getTime() }); dibujar(x, y, c); $('cuenta').textContent = pix.size + ' píxeles'; }
+function encuadre() {
+  const w = lw.clientWidth; Z = Math.min(16, Math.max(1, Z));
+  OX = Math.min(0, Math.max(w - w * Z, OX)); OY = Math.min(0, Math.max(w - w * Z, OY));
+  plano.style.transform = `translate(${OX}px,${OY}px) scale(${Z})`; plano.style.setProperty('--z', Z);
+  $('rej').style.opacity = Z >= 5 ? 1 : 0;
+}
+function zoomEn(cx, cy, f) { const r = lw.getBoundingClientRect(), px = cx - r.left, py = cy - r.top, nz = Math.min(16, Math.max(1, Z * f)), k = nz / Z; OX = px - (px - OX) * k; OY = py - (py - OY) * k; Z = nz; encuadre(); }
+const zoomBtn = f => { const r = lw.getBoundingClientRect(); zoomEn(r.left + r.width / 2, r.top + r.height / 2, f); };
+const zoomReset = () => { Z = 1; OX = OY = 0; encuadre(); };
+const celda = e => { const r = plano.getBoundingClientRect(); return { x: Math.min(N - 1, Math.max(0, Math.floor((e.clientX - r.left) / r.width * N))), y: Math.min(N - 1, Math.max(0, Math.floor((e.clientY - r.top) / r.height * N))) }; };
+function mira(e) {
+  const { x, y } = celda(e), q = pix.get(y * N + x);
+  $('mira').style.cssText = `left:${x / N * 100}%;top:${y / N * 100}%;width:${100 / N}%;height:${100 / N}%;border-width:${Math.max(.15, 2 / Z)}px`;
+  $('coord').textContent = x + ', ' + y + (q ? ' · ' + hace(q.t) : ' · vacío');
+}
+lw.addEventListener('wheel', e => { e.preventDefault(); zoomEn(e.clientX, e.clientY, e.deltaY < 0 ? 1.25 : .8); }, { passive: false });
+lw.addEventListener('pointerdown', e => { if (e.target.closest('.zb')) return; lw.setPointerCapture(e.pointerId); ps.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (ps.size === 1) mov = 0; mira(e); });
+lw.addEventListener('pointermove', e => {
+  const p = ps.get(e.pointerId);
+  if (!p) return mira(e);
+  if (ps.size === 1) { const dx = e.clientX - p.x, dy = e.clientY - p.y; mov += Math.abs(dx) + Math.abs(dy); if (mov > 6) { OX += dx; OY += dy; encuadre(); } }
+  else if (ps.size === 2) { const [a, b] = [...ps.values()], antes = Math.hypot(a.x - b.x, a.y - b.y); p.x = e.clientX; p.y = e.clientY; zoomEn((a.x + b.x) / 2, (a.y + b.y) / 2, Math.hypot(a.x - b.x, a.y - b.y) / (antes || 1)); mov = 99; }
+  p.x = e.clientX; p.y = e.clientY; mira(e);
+});
+const fin = e => { if (!ps.has(e.pointerId)) return; const solo = ps.size === 1; ps.delete(e.pointerId); if (solo && mov < 6 && e.type === 'pointerup') { const { x, y } = celda(e); pintar(x, y); } };
+lw.addEventListener('pointerup', fin); lw.addEventListener('pointercancel', fin);
+lw.addEventListener('contextmenu', e => { e.preventDefault(); const { x, y } = celda(e), q = pix.get(y * N + x); elegir(q ? q.c : 0); toast('Color copiado.'); });
+function iniciarEspera() {
+  clearInterval(ti);
+  const f = () => { const sg = Math.ceil((leer('ultimo_pixel', 0) + PIX_MS - Date.now()) / 1000); $('espera').textContent = sg > 0 ? 'Siguiente en ' + sg + ' s' : '¡Listo para pintar!'; if (sg <= 0) clearInterval(ti); };
+  f(); ti = setInterval(f, 500);
+}
+async function pintar(x, y) {
+  const sg = Math.ceil((leer('ultimo_pixel', 0) + PIX_MS - Date.now()) / 1000);
+  if (sg > 0) return toast('Espera ' + sg + ' s para pintar otra vez.');
+  guardar('ultimo_pixel', Date.now()); poner(x, y, colorSel); iniciarEspera();
+  const { error } = await client.rpc('pintar', { px: x, py: y, col: colorSel });
+  if (error) { toast('No se pudo pintar.'); cargarLienzo(); }
+}
+async function cargarLienzo() {
+  const nuevo = new Map();
+  for (let d = 0; ; d += 1000) {
+    const { data, error } = await client.from('pixeles').select('x,y,c,updated_at').order('y').order('x').range(d, d + 999);
+    if (error || !data) return;
+    data.forEach(q => nuevo.set(q.y * N + q.x, { x: q.x, y: q.y, c: q.c, t: new Date(q.updated_at).getTime() }));
+    if (data.length < 1000) break;
+  }
+  pix.clear(); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, N, N);
+  nuevo.forEach(q => { pix.set(q.y * N + q.x, q); dibujar(q.x, q.y, q.c); });
+  $('cuenta').textContent = pix.size + ' píxeles';
+}
+async function repetir() {
+  if (rep || !pix.size) return; rep = true;
+  const l = [...pix.values()].sort((a, b) => a.t - b.t), paso = Math.max(1, Math.ceil(l.length / 150));
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, N, N);
+  for (let i = 0; i < l.length; i += paso) { l.slice(i, i + paso).forEach(q => dibujar(q.x, q.y, q.c)); await new Promise(r => setTimeout(r, 40)); }
+  rep = false;
+}
+const recLienzo = () => { clearTimeout(tl); tl = setTimeout(cargarLienzo, 500); };
+function bajarLienzo() {
+  const c = document.createElement('canvas'); c.width = c.height = N * 16; const g = c.getContext('2d');
+  g.imageSmoothingEnabled = false; g.drawImage(lc, 0, 0, c.width, c.height);
+  c.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'lienzo.png'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); });
+}
+async function vaciarLienzo() {
+  if ((prompt('Esto borra todo el dibujo.\nEscribe BORRAR para confirmar:') || '').trim() !== 'BORRAR') return toast('Cancelado.');
+  const { error } = await client.from('pixeles').delete().gte('x', 0);
+  if (error) return toast('Sin permiso o error.');
+  cargarLienzo(); toast('Lienzo vaciado.');
+}
+
 // --- INICIO Y TIEMPO REAL ---
 let t;
 const recargar = () => { clearTimeout(t); t = setTimeout(cargarDatos, 400); };
-cargarDatos(); cargarAnuncio();
+cargarDatos(); cargarAnuncio(); cargarLienzo(); iniciarEspera();
 client.channel('muro')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'confesiones' }, recargar)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'respuestas' }, recargar)
   .on('postgres_changes', { event: '*', schema: 'public', table: 'anuncio' }, cargarAnuncio)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'pixeles' }, pl => { if (pl.eventType === 'DELETE') recLienzo(); else if (pl.new) poner(pl.new.x, pl.new.y, pl.new.c, pl.new.updated_at); })
   .subscribe();
 </script>
 </body>
