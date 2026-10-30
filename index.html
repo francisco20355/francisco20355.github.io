@@ -203,7 +203,13 @@ html{color-scheme:dark}:root[data-theme=light]{color-scheme:light}
       <div class="lw"><div id="plano"><canvas id="lienzo" width="96" height="96" aria-label="Lienzo colectivo"></canvas><div id="rej"></div><div id="mira"></div></div>
         <div class="zb"><button onclick="zoomBtn(1.5)" aria-label="Acercar">＋</button><button onclick="zoomBtn(1/1.5)" aria-label="Alejar">−</button><button onclick="zoomReset()" aria-label="Restablecer vista">⤢</button></div></div>
       <div class="lhud"><span id="coord">–</span><span id="cuenta"></span><span id="espera"></span></div>
-      <div id="paleta" class="paleta"></div>
+      
+      <!-- PALETA MEJORADA: 32 colores + selector libre -->
+      <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
+        <div id="paleta" class="paleta" style="margin-bottom:0; flex:1; grid-template-columns:repeat(8,1fr)"></div>
+        <input type="color" id="picker" value="#e50000" style="width:45px; height:45px; padding:0; border:1px solid var(--line); border-radius:10px; cursor:pointer; background:transparent;" aria-label="Elegir cualquier color">
+      </div>
+
       <div class="lbtns"><button class="btn-sm" onclick="repetir()">▶ Ver cómo se formó</button><button class="btn-sm" onclick="bajarLienzo()">Descargar ⬇️</button></div>
     </section>
   </div>
@@ -532,13 +538,36 @@ $('mainIn').placeholder = FR[Math.floor(Math.random() * FR.length)];
 
 // --- LIENZO COLECTIVO (estilo r/place) ---
 const N = 96, PIX_MS = 10000, lc = $('lienzo'), ctx = lc.getContext('2d'), lw = document.querySelector('.lw'), plano = $('plano');
-const PAL = ['#ffffff', '#e4e4e4', '#888888', '#222222', '#ffa7d1', '#e50000', '#e59500', '#a06a42', '#e5d900', '#94e044', '#02be01', '#00d3dd', '#0083c7', '#0000ea', '#cf6ee4', '#820080'];
+
+// Paleta oficial de 32 colores de r/place (hexadecimal)
+const PAL = [
+  '#FFFFFF', '#E4E4E4', '#888888', '#222222',
+  '#FFA7D1', '#E50000', '#E59500', '#A06A42',
+  '#E5D900', '#94E044', '#02BE01', '#00D3DD',
+  '#0083C7', '#0000EA', '#CF6EE4', '#820080',
+  '#FF4500', '#FFA800', '#FFD635', '#00A368',
+  '#3690EA', '#B449C0', '#FF99AA', '#FF3881',
+  '#BE0039', '#FFB470', '#FFF8B8', '#00CC78',
+  '#7EED56', '#00756F', '#009EAA', '#2450A4'
+];
+
 const pix = new Map(), ps = new Map();
-let colorSel = 5, ti, tl, Z = 1, OX = 0, OY = 0, mov = 0, rep = false;
-const elegir = i => { colorSel = i; document.querySelectorAll('.sw').forEach(x => x.classList.toggle('sel', Number(x.dataset.c) === i)); };
-$('paleta').innerHTML = PAL.map((c, i) => `<button class="sw${i === colorSel ? ' sel' : ''}" style="background:${c}" data-c="${i}" aria-label="Color ${i + 1}"></button>`).join('');
-$('paleta').addEventListener('click', e => { const b = e.target.closest('.sw'); if (b) elegir(Number(b.dataset.c)); });
-const dibujar = (x, y, c) => { ctx.fillStyle = PAL[c] || '#fff'; ctx.fillRect(x, y, 1, 1); };
+let colorSel = '#E50000'; // Color por defecto (rojo de r/place)
+let ti, tl, Z = 1, OX = 0, OY = 0, mov = 0, rep = false;
+
+// Función para seleccionar color
+const elegir = (hex) => {
+  colorSel = hex;
+  document.querySelectorAll('.sw').forEach(x => x.classList.toggle('sel', x.dataset.c === hex));
+  const p = $('picker'); if (p && p.value !== hex) p.value = hex;
+};
+
+// Renderizar la paleta de 32 colores
+$('paleta').innerHTML = PAL.map((c, i) => `<button class="sw${c === colorSel ? ' sel' : ''}" style="background:${c}" data-c="${c}" aria-label="Color ${i + 1}"></button>`).join('');
+$('paleta').addEventListener('click', e => { const b = e.target.closest('.sw'); if (b) elegir(b.dataset.c); });
+$('picker').addEventListener('input', e => elegir(e.target.value));
+
+const dibujar = (x, y, c) => { ctx.fillStyle = c; ctx.fillRect(x, y, 1, 1); };
 function poner(x, y, c, t) { pix.set(y * N + x, { x, y, c, t: new Date(t || Date.now()).getTime() }); dibujar(x, y, c); $('cuenta').textContent = pix.size + ' píxeles'; }
 function encuadre() {
   const w = lw.clientWidth; Z = Math.min(16, Math.max(1, Z));
@@ -566,7 +595,7 @@ lw.addEventListener('pointermove', e => {
 });
 const fin = e => { if (!ps.has(e.pointerId)) return; const solo = ps.size === 1; ps.delete(e.pointerId); if (solo && mov < 6 && e.type === 'pointerup') { const { x, y } = celda(e); pintar(x, y); } };
 lw.addEventListener('pointerup', fin); lw.addEventListener('pointercancel', fin);
-lw.addEventListener('contextmenu', e => { e.preventDefault(); const { x, y } = celda(e), q = pix.get(y * N + x); elegir(q ? q.c : 0); toast('Color copiado.'); });
+lw.addEventListener('contextmenu', e => { e.preventDefault(); const { x, y } = celda(e), q = pix.get(y * N + x); elegir(q ? q.c : '#ffffff'); toast('Color copiado.'); });
 function iniciarEspera() {
   clearInterval(ti);
   const f = () => { const sg = Math.ceil((leer('ultimo_pixel', 0) + PIX_MS - Date.now()) / 1000); $('espera').textContent = sg > 0 ? 'Siguiente en ' + sg + ' s' : '¡Listo para pintar!'; if (sg <= 0) clearInterval(ti); };
@@ -577,7 +606,7 @@ async function pintar(x, y) {
   if (sg > 0) return toast('Espera ' + sg + ' s para pintar otra vez.');
   guardar('ultimo_pixel', Date.now()); poner(x, y, colorSel); iniciarEspera();
   const { error } = await client.rpc('pintar', { px: x, py: y, col: colorSel });
-  if (error) { toast('No se pudo pintar.'); cargarLienzo(); }
+  if (error) { console.error(error); toast('No se pudo pintar.'); cargarLienzo(); }
 }
 async function cargarLienzo() {
   const nuevo = new Map();
