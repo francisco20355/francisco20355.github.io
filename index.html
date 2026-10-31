@@ -1002,18 +1002,21 @@ async function pintar(x, y) {
   const { error } = await client.rpc('pintar', { px: x, py: y, col: colorSel });
   if (error) { console.error(error); toast('No se pudo pintar.'); cargarLienzo(); }
 }
+
+// --- CARGA DEL LIENZO (corregido: 1 sola petición RPC) ---
 async function cargarLienzo() {
-  const nuevo = new Map();
-  for (let d = 0; ; d += 1000) {
-    const { data, error } = await client.from('pixeles').select('x,y,c,updated_at').order('y').order('x').range(d, d + 999);
-    if (error || !data) return;
-    data.forEach(q => nuevo.set(q.y * N + q.x, { x: q.x, y: q.y, c: q.c, t: new Date(q.updated_at).getTime() }));
-    if (data.length < 1000) break;
-  }
-  pix.clear(); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, N, N);
-  nuevo.forEach(q => { pix.set(q.y * N + q.x, q); dibujar(q.x, q.y, q.c); });
+  const { data, error } = await client.rpc('obtener_lienzo');
+  if (error || !data) { console.error('cargarLienzo:', error); return; }
+  pix.clear();
+  ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, N, N);
+  data.forEach(row => {
+    const x = row[0], y = row[1], c = row[2];
+    pix.set(y * N + x, { x, y, c, t: 0 });
+    dibujar(x, y, c);
+  });
   $('cuenta').textContent = pix.size + ' píxeles';
 }
+
 async function repetir() {
   if (rep || !pix.size) return; rep = true;
   const l = [...pix.values()].sort((a, b) => a.t - b.t), paso = Math.max(1, Math.ceil(l.length / 150));
